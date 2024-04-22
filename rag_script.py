@@ -27,7 +27,7 @@ def chat_bot():
         st.chat_message('human').write(message[0])
         st.chat_message('ai').write(message[1])    
     #
-    if query := st.chat_input("ask to your document anything"):
+    if query := st.chat_input("Ask your document anything..."):
         st.chat_message("human").write(query)
         response = "We are still working on the RAG machine... be patient :D" 
         st.chat_message("ai").write(response)
