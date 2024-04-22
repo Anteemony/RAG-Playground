@@ -1,5 +1,7 @@
 # RAG-Playground
 
+Go to application: https://unify-rag-playground.streamlit.app/
+
 Project Description:
 Streamlit application that enables users to upload a pdf file and chat with an LLM for performing document analysis.  
 
