@@ -18,8 +18,20 @@ def landing_page():
     3. Upload your document(s) and click the Submit button
     4. Chat Away!
     ''')
+
+def query_llm(retriever, query):
+    qa_chain = ConversationalRetrievalChain.from_llm(
+        llm=OpenAIChat(openai_api_key=st.session_state.openai_api_key),
+        retriever=retriever,
+        return_source_documents=True,
+    )
+    result = qa_chain({'question': query, 'chat_history': st.session_state.messages})
+    result = result['answer']
+    st.session_state.messages.append((query, result))
+    return result
     
 def chat_bot():
+    
     if "messages" not in st.session_state:
         st.session_state.messages = []
     #
@@ -29,7 +41,7 @@ def chat_bot():
     #
     if query := st.chat_input():
         st.chat_message("human").write(query)
-        response = "we are still working on the RAG machine... be patience :D a" #query_llm(st.session_state.retriever, query)
+        response = "still working on the RAG machine... patience" #query_llm(st.session_state.retriever, query)
         st.chat_message("ai").write(response)
         
 def main():

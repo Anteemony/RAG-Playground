@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def landing_page():
     st.set_page_config("Unify Demos: RAG")
 
@@ -20,6 +21,9 @@ def landing_page():
     ''')
     
 def chat_bot():
+    #
+    input_fields()
+    #
     if "messages" not in st.session_state:
         st.session_state.messages = []
     #
@@ -29,7 +33,7 @@ def chat_bot():
     #
     if query := st.chat_input():
         st.chat_message("human").write(query)
-        response = "we are still working on the RAG machine... be patience :D a" #query_llm(st.session_state.retriever, query)
+        response = query_llm(st.session_state.retriever, query)
         st.chat_message("ai").write(response)
         
 def main():

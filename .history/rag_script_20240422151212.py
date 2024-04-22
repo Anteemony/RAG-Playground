@@ -20,6 +20,7 @@ def landing_page():
     ''')
     
 def chat_bot():
+    
     if "messages" not in st.session_state:
         st.session_state.messages = []
     #

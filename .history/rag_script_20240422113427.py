@@ -18,23 +18,10 @@ def landing_page():
     3. Upload your document(s) and click the Submit button
     4. Chat Away!
     ''')
-    
-def chat_bot():
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    #
-    for message in st.session_state.messages:
-        st.chat_message('human').write(message[0])
-        st.chat_message('ai').write(message[1])    
-    #
-    if query := st.chat_input():
-        st.chat_message("human").write(query)
-        response = "we are still working on the RAG machine... be patience :D a" #query_llm(st.session_state.retriever, query)
-        st.chat_message("ai").write(response)
-        
+    st.chat_input()
+
 def main():
     landing_page()
-    chat_bot()
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def landing_page():
     st.set_page_config("Unify Demos: RAG")
 
@@ -19,19 +20,25 @@ def landing_page():
     4. Chat Away!
     ''')
     
-def chat_bot():
+def chat_bot()
+
+    # Initialize chat history
     if "messages" not in st.session_state:
-        st.session_state.messages = []
-    #
+    st.session_state.messages = []
+
+    # Display chat messages from history on app rerun
     for message in st.session_state.messages:
-        st.chat_message('human').write(message[0])
-        st.chat_message('ai').write(message[1])    
-    #
-    if query := st.chat_input():
-        st.chat_message("human").write(query)
-        response = "we are still working on the RAG machine... be patience :D a" #query_llm(st.session_state.retriever, query)
-        st.chat_message("ai").write(response)
-        
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+    # Accept user input
+    if prompt := st.chat_input("Ask to your document"):
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
 def main():
     landing_page()
     chat_bot()
