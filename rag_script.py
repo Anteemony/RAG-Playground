@@ -29,7 +29,7 @@ def chat_bot():
     #
     if query := st.chat_input("Ask your document anything..."):
         st.chat_message("human").write(query)
-        response = "We are still working on the RAG machine... be patient :D" 
+        response = "Coming soon... RAG machine still under construction🚧" 
         st.chat_message("ai").write(response)
         
 def main():
