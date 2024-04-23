@@ -1,9 +1,50 @@
+from PyPDF2 import PdfReader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import GPT4AllEmbeddings
+from langchain_unify.chat_models import ChatUnify
+from langchain.prompts import PromptTemplate
+from langchain.chains.question_answering import load_qa_chain
+from streamlit.runtime.state import session_state
 import streamlit as st
 
+def ask_unify(query):
+		prompt_template = '''Use the provided context to answer the question \nContext: {context} \nQuestion: {question} \n\n Answer'''
+		model = ChatUnify(model=st.session_state.endpoint, unify_api_key=st.session_state.unify_api_key)
+		prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+		qa_chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
+	
+		embeddings = GPT4AllEmbeddings()
+		db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
+		docs = db.similarity_search(query)
+		response = qa_chain({"input_documents": docs, "question": query, 'chat_history': st.session_state.messages}, return_only_outputs=True)
+
+		return response["output_text"]
 
 def process_inputs():
-    if not st.session_state.unify_api_key or not st.session_state.endpoint or not st.session_state.pdf_docs:
-        st.warning("Please enter the missing fields and upload your pdf document(s)")
+		if not st.session_state.unify_api_key or not st.session_state.endpoint or not st.session_state.pdf_docs:
+			st.warning("Please enter the missing fields and upload your pdf document(s)")
+		else:
+			# Refresh message history
+			st.session_state.messages = []
+			
+			# Extract text from PDF
+			text = ""
+			for pdf in st.session_state.pdf_docs:
+				pdf_reader = PdfReader(pdf)
+				for page in pdf_reader.pages:
+					text += page.extract_text()
+
+			# convert to text chunks
+			text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+			text_chunks = text_splitter.split_text(text)
+
+			# Perform vector storage
+			embeddings = GPT4AllEmbeddings()
+			vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+			vector_store.save_local("faiss_index")
+
+			st.session_state.processed_input = True
 
 
 def landing_page():
@@ -24,19 +65,26 @@ def landing_page():
     3. Upload your document(s) and click the Submit button
     4. Chat Away!
     ''')
-    
+
+
 def chat_bot():
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    #
-    for message in st.session_state.messages:
-        st.chat_message('human').write(message[0])
-        st.chat_message('ai').write(message[1])    
-    #
-    if query := st.chat_input("Ask your document anything..."):
-        st.chat_message("human").write(query)
-        response = "Coming soon... RAG machine still under construction🚧" 
-        st.chat_message("ai").write(response)
+	if "messages" not in st.session_state:
+			st.session_state.messages = []
+	#
+	for message in st.session_state.messages:
+			st.chat_message('human').write(message[0])
+			st.chat_message('assistant').write(message[1])
+	#
+	if query := st.chat_input("Ask your document anything...", key="query"):
+		
+			if "processed_input" not in st.session_state:
+				st.warning("Please input your details in the sidebar first")
+				return
+		
+			st.chat_message("human").write(query)
+			response = ask_unify(query) 
+			st.chat_message("assistant").write(response)
+			st.session_state.messages.append([query, response])
         
 def main():
     landing_page()

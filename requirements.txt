@@ -1,1 +1,7 @@
 streamlit
+PyPDF2
+gpt4all
+faiss-cpu
+git+https://github.com/unifyai/langchain.git#egg=langchain&subdirectory=libs/langchain
+git+https://github.com/unifyai/langchain.git#egg=langchain-unify&subdirectory=libs/partners/unify
+langchain-community
