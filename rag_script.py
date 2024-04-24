@@ -35,14 +35,14 @@ def chat_bot():
         st.chat_message("user").markdown(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})   
-    response = "Coming soon... RAG machine still under construction🚧"
     
-    # Display assistant response in chat message container
-    with st.chat_message("assistant"):
-        st.markdown(response)
+        response = "Coming soon... RAG machine still under construction🚧"
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            st.markdown(response)
         
-    # Add assistant response to chat history    
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        # Add assistant response to chat history    
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
 
 def main():
