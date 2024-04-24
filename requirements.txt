@@ -1,6 +1,7 @@
 streamlit
 PyPDF2
 sentence_transformers
+InstructorEmbedding
 faiss-cpu
 git+https://github.com/unifyai/langchain.git#egg=langchain&subdirectory=libs/langchain
 git+https://github.com/unifyai/langchain.git#egg=langchain-unify&subdirectory=libs/partners/unify
