@@ -1,7 +1,7 @@
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceInstructEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_unify.chat_models import ChatUnify
 from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
@@ -9,11 +9,7 @@ from streamlit.runtime.state import session_state
 import streamlit as st
 
 def ask_unify(query):
-	embeddings = HuggingFaceInstructEmbeddings(
-			model_name="hkunlp/instructor-large",
-			model_kwargs={'device': 'cpu'},
-			encode_kwargs={'normalize_embeddings': True}
-		)
+	embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 	vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 	retriever = vectorstore.as_retriever()
 
@@ -49,11 +45,7 @@ def process_inputs():
 		text_chunks = text_splitter.split_text(text)
 
 		# Perform vector storage
-		embeddings = HuggingFaceInstructEmbeddings(
-			model_name="hkunlp/instructor-large",
-			model_kwargs={'device': 'cpu'},
-			encode_kwargs={'normalize_embeddings': True}
-		)
+		embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 		vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
 		vector_store.save_local("faiss_index")
 
