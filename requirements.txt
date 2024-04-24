@@ -1,6 +1,6 @@
 streamlit
 PyPDF2
-gpt4all
+sentence_transformers
 faiss-cpu
 git+https://github.com/unifyai/langchain.git#egg=langchain&subdirectory=libs/langchain
 git+https://github.com/unifyai/langchain.git#egg=langchain-unify&subdirectory=libs/partners/unify
