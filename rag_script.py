@@ -20,18 +20,31 @@ def landing_page():
     ''')
     
 def chat_bot():
+    #initialize chat history
     if "messages" not in st.session_state:
-        st.session_state.messages = []
-    #
-    for message in st.session_state.messages:
-        st.chat_message('human').write(message[0])
-        st.chat_message('ai').write(message[1])    
-    #
-    if query := st.chat_input("ask to your document anything"):
-        st.chat_message("human").write(query)
-        response = "we are still working on the RAG machine... be patience :D a" 
-        st.chat_message("ai").write(response)
+        st.session_state['messages'] = []
         
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    # React to user input
+    if prompt := st.chat_input("Ask your document anything..."):
+        # Display user message in chat message container
+        st.chat_message("user").markdown(prompt)
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})   
+    response = "Coming soon... RAG machine still under construction🚧"
+    
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        st.markdown(response)
+        
+    # Add assistant response to chat history    
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+
 def main():
     landing_page()
     chat_bot()
