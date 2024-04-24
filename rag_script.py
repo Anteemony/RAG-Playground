@@ -9,8 +9,6 @@ from streamlit.runtime.state import session_state
 import streamlit as st
 
 def ask_unify(query):
-	def ask_unify(query):
-
 	embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 	vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 	retriever = vectorstore.as_retriever()
