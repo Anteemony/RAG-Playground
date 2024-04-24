@@ -41,7 +41,7 @@ def process_inputs():
 				text += page.extract_text()
 
 		# convert to text chunks
-		text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+		text_splitter = RecursiveCharacterTextSplitter(chunk_size=4096, chunk_overlap=500)
 		text_chunks = text_splitter.split_text(text)
 
 		# Perform vector storage
