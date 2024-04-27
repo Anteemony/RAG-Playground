@@ -7,7 +7,6 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 import streamlit as st
 
-
 def ask_unify(query):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
@@ -15,7 +14,6 @@ def ask_unify(query):
 
     prompt_template = '''
     Use the provided context to answer the question.
-
     \nContext: {context} 
     \nQuestion: {question} 
     \n\n Answer:
@@ -28,7 +26,7 @@ def ask_unify(query):
         retriever=retriever,
         return_source_documents=True,
         combine_docs_chain_kwargs={"prompt": prompt},
-        verbose=True
+        max_tokens_limit=4000
     )
 
     response = qa_chain({"question": query, 'chat_history': st.session_state.messages}, return_only_outputs=True)
@@ -51,7 +49,7 @@ def process_inputs():
                 text += page.extract_text()
 
         # convert to text chunks
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
         text_chunks = text_splitter.split_text(text)
 
         # Perform vector storage
