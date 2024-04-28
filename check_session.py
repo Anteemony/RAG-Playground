@@ -26,5 +26,4 @@ def handle_file(USER_FOLDER_STRING):
     else:
         # Session is not running, Do what you want to do on user exit here
         shutil.rmtree(USER_FOLDER_STRING)
-        print("User Exited. Deleted folder", USER_FOLDER_STRING)
         return
