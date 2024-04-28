@@ -58,7 +58,7 @@ def process_inputs():
                 text += page.extract_text()
 
         # Delete PDF from Session and save space
-        st.session_state.pdf_docs = ""
+        del st.session_state["pdf_docs"]
 
         # convert to text chunks
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
