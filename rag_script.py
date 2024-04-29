@@ -7,9 +7,18 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 import streamlit as st
 
+import random, string
+from pathlib import Path
+from check_session import handle_file
+
+# create directory to store user vector files
+if "USER_RANDOM_FOLDER_NAME" not in st.session_state:
+    st.session_state.USER_RANDOM_FOLDER_NAME = ''.join(random.choices(string.ascii_letters + string.digits, k=40))
+LOCAL_VECTOR_STORE_DIR = Path(__file__).resolve().parent.joinpath('data', st.session_state.USER_RANDOM_FOLDER_NAME)
+
 def ask_unify(query):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
+    vectorstore = FAISS.load_local(LOCAL_VECTOR_STORE_DIR.as_posix(), embeddings, allow_dangerous_deserialization=True)
     retriever = vectorstore.as_retriever()
 
     prompt_template = '''
@@ -48,6 +57,9 @@ def process_inputs():
             for page in pdf_reader.pages:
                 text += page.extract_text()
 
+        # Delete PDF from Session and save space
+        del st.session_state["pdf_docs"]
+
         # convert to text chunks
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
         text_chunks = text_splitter.split_text(text)
@@ -55,7 +67,10 @@ def process_inputs():
         # Perform vector storage
         embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-        vector_store.save_local("faiss_index")
+        vector_store.save_local(LOCAL_VECTOR_STORE_DIR.as_posix())
+
+        # delete the files when the session ends
+        handle_file(LOCAL_VECTOR_STORE_DIR.as_posix())
 
         st.session_state.processed_input = True
 
@@ -64,12 +79,10 @@ def landing_page():
     st.set_page_config("Unify Demos: RAG")
 
     with st.sidebar:
-        unify_api_key = st.text_input("Unify API Key*", type="password", placeholder="Enter Unify API Key",
-                                      key="unify_api_key")
-        endpoint = st.text_input("Endpoint (model@provider)*", placeholder="model@provider",
-                                 value="llama-2-70b-chat@anyscale", key="endpoint")
-        pdf_docs = st.file_uploader(label="Upload PDF Document(s)*", type="pdf", accept_multiple_files=True,
-                                    key="pdf_docs")
+        st.session_state.unify_api_key = st.text_input("Unify API Key*", type="password", placeholder="Enter Unify API Key")
+        st.session_state.endpoint = st.text_input("Endpoint (model@provider)*", placeholder="model@provider",
+                                 value="llama-2-70b-chat@anyscale")
+        st.session_state.pdf_docs = st.file_uploader(label="Upload PDF Document(s)*", type="pdf", accept_multiple_files=True)
         st.button("Submit Document(s)", on_click=process_inputs)
 
     st.title("Unify Demos: RAG Playground")
