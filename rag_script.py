@@ -7,6 +7,12 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 import streamlit as st
 
+def endpoint_callback():
+    st.toast("Enpoint Updated 🎉")
+
+def clear_history():
+    if "messages" in st.session_state:
+        st.session_state.messages = []
 def ask_unify(query):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
@@ -35,30 +41,34 @@ def ask_unify(query):
 
 
 def process_inputs():
-    if not st.session_state.unify_api_key or not st.session_state.endpoint or not st.session_state.pdf_docs:
-        st.warning("Please enter the missing fields and upload your pdf document(s)")
-    else:
-        # Refresh message history
-        st.session_state.messages = []
+    with st.status("Processing Document(s)"):
+        if not st.session_state.unify_api_key or not st.session_state.endpoint or not st.session_state.pdf_docs:
+            st.warning("Please enter the missing fields and upload your pdf document(s)")
+        else:
+            # Refresh message history
+            st.session_state.messages = []
 
-        # Extract text from PDF
-        text = ""
-        for pdf in st.session_state.pdf_docs:
-            pdf_reader = PdfReader(pdf)
-            for page in pdf_reader.pages:
-                text += page.extract_text()
+            st.write("Extracting Text")
+            # Extract text from PDF
+            text = ""
+            for pdf in st.session_state.pdf_docs:
+                pdf_reader = PdfReader(pdf)
+                for page in pdf_reader.pages:
+                    text += page.extract_text()
 
-        # convert to text chunks
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
-        text_chunks = text_splitter.split_text(text)
+            st.write("Splitting Text")
+            # convert to text chunks
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
+            text_chunks = text_splitter.split_text(text)
 
-        # Perform vector storage
-        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-        vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-        vector_store.save_local("faiss_index")
+            st.write("Performing Vector Storage")
+            # Perform vector storage
+            embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+            vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+            vector_store.save_local("faiss_index")
 
-        st.session_state.processed_input = True
-
+            st.session_state.processed_input = True
+            st.success('File(s) Submitted successfuly!')
 
 def landing_page():
     st.set_page_config("Unify Demos: RAG")
@@ -67,10 +77,11 @@ def landing_page():
         unify_api_key = st.text_input("Unify API Key*", type="password", placeholder="Enter Unify API Key",
                                       key="unify_api_key")
         endpoint = st.text_input("Endpoint (model@provider)*", placeholder="model@provider",
-                                 value="llama-2-70b-chat@anyscale", key="endpoint")
+                                 value="llama-2-70b-chat@anyscale", key="endpoint", on_change=endpoint_callback)
         pdf_docs = st.file_uploader(label="Upload PDF Document(s)*", type="pdf", accept_multiple_files=True,
                                     key="pdf_docs")
-        st.button("Submit Document(s)", on_click=process_inputs)
+        if st.button("Submit Document(s)"):
+            process_inputs()
 
     st.title("Unify Demos: RAG Playground")
     st.text("Chat with your PDF file using the LLM of your choice")
@@ -101,6 +112,9 @@ def chat_bot():
         response = ask_unify(query)
         st.chat_message("assistant").write(response)
         st.session_state.messages.append((query, response))
+
+        with st.sidebar:
+            st.button("Clear Chat History", type="primary", on_click=clear_history)
 
 
 def main():
