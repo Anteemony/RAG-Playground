@@ -4,7 +4,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_unify.chat_models import ChatUnify
 from langchain.prompts import PromptTemplate
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains import RetrievalQA
+from langchain.memory import ConversationBufferMemory
 import streamlit as st
         
 import random, string
@@ -20,6 +21,9 @@ def field_callback(field):
     st.toast(f"{field} Updated Successfully! 🎉")
 
 def clear_history():
+    if "ConversationBufferMemory" in st.session_state:
+        st.session_state.ConversationBufferMemory.clear()
+
     if "messages" in st.session_state:
         st.session_state.messages = []
         
@@ -29,25 +33,46 @@ def ask_unify(query):
     retriever = vectorstore.as_retriever()
 
     prompt_template = '''
-    Use the provided context to answer the question.
-    \nContext: {context} 
-    \nQuestion: {question} 
-    \n\n Answer:
+    Use the following context (delimited by <ctx></ctx>) and the chat history (delimited by <hs></hs>) to answer the question (delimited by <qn></qn>):
+    ------
+    <ctx>
+    {context}
+    </ctx>
+    ------
+    <hs>
+    {history}
+    </hs>
+    ------
+    <qn>
+    {question}
+    </qn>
+    Answer:
     '''
-    model = ChatUnify(model=st.session_state.endpoint, unify_api_key=st.session_state.unify_api_key)
-    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question", "chat_history"])
 
-    qa_chain = ConversationalRetrievalChain.from_llm(
+    model = ChatUnify(model=st.session_state.endpoint, unify_api_key=st.session_state.unify_api_key)
+    prompt = PromptTemplate(template=prompt_template, input_variables=["input", "context", "question"])
+
+    if "ConversationBufferMemory" not in st.session_state:
+        st.session_state.ConversationBufferMemory = ConversationBufferMemory(
+                memory_key="history",
+                input_key="question")
+
+    qa_chain = RetrievalQA.from_chain_type(
         llm=model,
+        chain_type="stuff",
         retriever=retriever,
         return_source_documents=True,
-        combine_docs_chain_kwargs={"prompt": prompt},
-        max_tokens_limit=4000
+        verbose=True,
+        chain_type_kwargs={
+            "verbose": True,
+            "prompt": prompt,
+            "memory": st.session_state.ConversationBufferMemory,
+        }
     )
 
-    response = qa_chain({"question": query, 'chat_history': st.session_state.messages}, return_only_outputs=True)
+    response = qa_chain({"query": query})
 
-    return response["answer"]
+    return response["result"]
 
 
 def process_inputs():
