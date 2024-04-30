@@ -130,7 +130,7 @@ def landing_page():
         if st.button("Submit Document(s)"):
             process_inputs()
 
-    st.title("Unify Demos: RAG Playground")
+    st.title("Langchain RAG Playground 🛝")
     st.text("Chat with your PDF file using the LLM of your choice")
     st.write('''
         Usage: 
