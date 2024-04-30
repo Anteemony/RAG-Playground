@@ -18,7 +18,7 @@ if "USER_RANDOM_FOLDER_NAME" not in st.session_state:
 LOCAL_VECTOR_STORE_DIR = Path(__file__).resolve().parent.joinpath('data', st.session_state.USER_RANDOM_FOLDER_NAME)
 
 def field_callback(field):
-    st.toast(f"{field} Updated Successfully! 🎉")
+    st.toast(f"{field} Updated Successfully!", icon="🎉")
 
 def clear_history():
     if "ConversationBufferMemory" in st.session_state:
@@ -76,10 +76,10 @@ def ask_unify(query):
 
 
 def process_inputs():
-    with st.status("Processing Document(s)"):
-        if not st.session_state.unify_api_key or not st.session_state.endpoint or not st.session_state.pdf_docs:
-            st.warning("Please enter the missing fields and upload your pdf document(s)")
-        else:
+    if not st.session_state.unify_api_key or not st.session_state.endpoint or not st.session_state.pdf_docs:
+        st.warning("Please enter the missing fields and upload your pdf document(s)")
+    else:
+        with st.status("Processing Document(s)"):
             # Refresh message history
             st.session_state.messages = []
 
@@ -118,7 +118,7 @@ def landing_page():
     with st.sidebar:
 
         # input for Unify API Key
-        st.session_state.unify_api_key = st.text_input("Unify API Key*", type="password", on_change=field_callback, placeholder="Enter Unify API Key")
+        st.session_state.unify_api_key = st.text_input("Unify API Key*", type="password", on_change=field_callback, placeholder="Enter Unify API Key", args=("Unify Key ",))
         # Model and provider selection 
         model_provider = {"mixtral-8x7b-instruct-v0.1": ["together-ai", "octoai", "replicate", "mistral-ai", "perplexity-ai", "anyscale", "fireworks-ai", "lepton-ai", "deepinfra", "aws-bedrock"], "llama-2-70b-chat": ["anyscale", "perplexity-ai", "together-ai", "replicate", "octoai", "fireworks-ai", "lepton-ai", "deepinfra", "aws-bedrock"], "llama-2-13b-chat": ["anyscale", "together-ai", "replicate", "octoai", "fireworks-ai", "lepton-ai", "deepinfra", "aws-bedrock"], "mistral-7b-instruct-v0.2": ["perplexity-ai", "together-ai", "mistral-ai", "replicate", "aws-bedrock", "octoai", "fireworks-ai"], "llama-2-7b-chat": ["anyscale", "together-ai", "replicate", "fireworks-ai", "lepton-ai", "deepinfra"], "codellama-34b-instruct": ["anyscale", "perplexity-ai", "together-ai", "octoai", "fireworks-ai", "deepinfra"], "gemma-7b-it": ["anyscale", "together-ai", "fireworks-ai", "lepton-ai", "deepinfra"], "mistral-7b-instruct-v0.1": ["anyscale", "together-ai", "fireworks-ai", "deepinfra"], "mixtral-8x22b-instruct-v0.1": ["mistral-ai", "together-ai", "fireworks-ai", "deepinfra"], "codellama-13b-instruct": ["together-ai", "octoai", "fireworks-ai"], "codellama-7b-instruct": ["together-ai", "octoai"], "yi-34b-chat": ["together-ai", "deepinfra"], "llama-3-8b-chat": ["together-ai", "fireworks-ai"], "llama-3-70b-chat": ["together-ai", "fireworks-ai"], "pplx-7b-chat": ["perplexity-ai"], "mistral-medium": ["mistral-ai"], "gpt-4": ["openai"], "pplx-70b-chat": ["perplexity-ai"], "gpt-3.5-turbo": ["openai"], "deepseek-coder-33b-instruct": ["together-ai"], "gemma-2b-it": ["together-ai"], "gpt-4-turbo": ["openai"], "mistral-small": ["mistral-ai"], "mistral-large": ["mistral-ai"], "claude-3-haiku": ["anthropic"], "claude-3-opus": ["anthropic"], "claude-3-sonnet": ["anthropic"]}
         model_name = st.selectbox("Select Model",options=model_provider.keys(),index=20, on_change=field_callback, placeholder= "Model", args= ("Model",))
@@ -135,7 +135,7 @@ def landing_page():
     st.write('''
         Usage: 
         1. Input your **Unify API Key.** If you don’t have one yet, log in to the [console](https://console.unify.ai/) to get yours.
-        2. Input your Endpoint i.e. **Model and Provider ID** as model@provider. You can find both in the [benchmark interface](https://unify.ai/hub).
+        2. Select the **Model** and endpoint provider of your choice from the drop down. You can find both model and provider information in the [benchmark interface](https://unify.ai/hub).
         3. Upload your document(s) and click the Submit button
         4. Chat Away!
         ''')

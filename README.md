@@ -1,24 +1,17 @@
-# RAG-Playground
+# LangChain RAG Playground 🛝
 
-Go to application: https://unify-rag-playground.streamlit.app/
+#### Chat with your PDF file using the LLM of your choice
 
-Project Description:
-Streamlit application that enables users to upload a pdf file and chat with an LLM for performing document analysis.  
+## Project Description:
+Streamlit application that enables users to upload a pdf file and chat with an LLM for performing document analysis.
 
-Users should be able to:
-Upload a pdf file
-Choose an LLM
-Chat with the LLM
+Compare the performance of LLMs across endpoint providers to find the best possible configuration for your speed, latency and cost requirements.
+You find more model/provider information in the [Unify benchmark interface](https://unify.ai/hub).
 
-Useful Resources:
-[Home — Unify Documentation](https://unify.ai/docs/)
+## Usage:
 
-[LangChain Documentation](https://www.langchain.com/retrieval)
-
-[RAG example with Streamlit & LangChain](https://github.com/mirabdullahyaser/Retrieval-Augmented-Generation-Engine-with-LangChain-and-Streamlit)
-
-Difficulty:
-Medium
-
-Duration:
-~20 hours 
+1. Go to the application: https://unify-rag-playground.streamlit.app/
+2. Input your Unify API Key. If you don’t have one yet, log in to the [console](https://console.unify.ai/) to get yours.
+3. Select the Model and endpoint provider of your choice from the drop down. You can find both model and provider information in the benchmark interface.
+4. Upload your document(s) and click the Submit button
+5. Chat Away!
