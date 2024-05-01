@@ -113,7 +113,7 @@ def process_inputs():
 
             st.write("Splitting Text")
             # convert to text chunks
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=st.session_state.chunk_size, chunk_overlap=100)
             text_chunks = text_splitter.split_text(text)
 
             st.write("Performing Vector Storage")
@@ -167,6 +167,11 @@ def landing_page():
         # Document uploader
         st.session_state.pdf_docs = st.file_uploader(label="Upload PDF Document(s)*", type="pdf",
                                                      accept_multiple_files=True)
+
+        # Custom chunk size
+        st.session_state.chunk_size = st.number_input(label="Chunk Size", value=1000, on_change=field_callback,
+                                                      placeholder="1000", args=("Chunk Size",))
+
         if st.button("Submit Document(s)"):
             process_inputs()
 
