@@ -169,10 +169,17 @@ def landing_page():
             "deepseek-coder-33b-instruct": ["together-ai"], "gemma-2b-it": ["together-ai"], "gpt-4-turbo": ["openai"],
             "mistral-small": ["mistral-ai"], "mistral-large": ["mistral-ai"], "claude-3-haiku": ["anthropic"],
             "claude-3-opus": ["anthropic"], "claude-3-sonnet": ["anthropic"]}
+        dynamic_provider = ["lowest-input-cost", "lowest-output-cost", "lowest-itl", "lowest-ttft", "highest-tks-per-sec"]
         model_name = st.selectbox("Select Model", options=model_provider.keys(), index=20, on_change=field_callback,
                                   placeholder="Model", args=("Model",))
-        provider_name = st.selectbox("Select a Provider", options=model_provider[model_name], on_change=field_callback,
-                                     placeholder="Provider", args=("Provider",))
+        if st.toggle("Enable Dynamic Routing"):
+            provider_name = st.selectbox("Select a Provider", options=dynamic_provider,
+                                         on_change=field_callback,
+                                         placeholder="Provider", args=("Provider",))
+        else:
+            provider_name = st.selectbox("Select a Provider", options=model_provider[model_name],
+                                         on_change=field_callback,
+                                         placeholder="Provider", args=("Provider",))
         st.session_state.endpoint = f"{model_name}@{provider_name}"
 
         # Document uploader
