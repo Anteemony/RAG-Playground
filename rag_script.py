@@ -39,7 +39,8 @@ def extract_pdf(pdf_docs):
 @st.cache_data
 def perform_vector_storage(text_chunks):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    st.session_state.vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+    return vector_store
 
 
 def format_docs(docs):
@@ -56,8 +57,10 @@ def output_chunks(chain, query):
 
 
 def ask_unify():
-    vectorstore = st.session_state.vector_store
-    retriever = vectorstore.as_retriever()
+    if "vector_store" not in st.session_state:
+        process_inputs()
+
+    retriever = st.session_state.vector_store.as_retriever()
 
     model = ChatUnify(model=st.session_state.endpoint, unify_api_key=st.session_state.unify_api_key)
 
@@ -132,7 +135,7 @@ def process_inputs():
 
             st.write("Performing Vector Storage")
             # Perform vector storage
-            perform_vector_storage(text_chunks)
+            st.session_state.vector_store = perform_vector_storage(text_chunks)
 
             st.session_state.processed_input = True
             st.success('File(s) Submitted successfully!')
