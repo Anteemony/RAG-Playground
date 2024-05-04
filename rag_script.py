@@ -232,7 +232,8 @@ def chat_bot():
         )
 
         st.session_state.messages.append((query, response))
-
+        
+    if len(st.session_state.messages) > 0:
         with st.sidebar:
             st.button("Clear Chat History", type="primary", on_click=clear_history)
 
