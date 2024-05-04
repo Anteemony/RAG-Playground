@@ -27,8 +27,8 @@ def field_callback(field):
 
 
 def clear_history():
-    if "ConversationBufferMemory" in st.session_state:
-        st.session_state.ConversationBufferMemory.clear()
+    if "store" in st.session_state:
+        st.session_state.store = {}
 
     if "messages" in st.session_state:
         st.session_state.messages = []
