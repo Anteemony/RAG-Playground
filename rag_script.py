@@ -12,19 +12,8 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 import streamlit as st
 
-import random, string
-from pathlib import Path
-from check_session import handle_file
-
-# create directory to store user vector files
-if "USER_RANDOM_FOLDER_NAME" not in st.session_state:
-    st.session_state.USER_RANDOM_FOLDER_NAME = ''.join(random.choices(string.ascii_letters + string.digits, k=40))
-LOCAL_VECTOR_STORE_DIR = Path(__file__).resolve().parent.joinpath('data', st.session_state.USER_RANDOM_FOLDER_NAME)
-
-
 def field_callback(field):
     st.toast(f"{field} Updated Successfully!", icon="🎉")
-
 
 def clear_history():
     if "store" in st.session_state:
@@ -32,7 +21,6 @@ def clear_history():
 
     if "messages" in st.session_state:
         st.session_state.messages = []
-
 
 @st.cache_data
 def extract_pdf(pdf_docs):
@@ -44,17 +32,13 @@ def extract_pdf(pdf_docs):
 
     return text
 
-
 @st.cache_data
 def perform_vector_storage(text_chunks):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-    vector_store.save_local(LOCAL_VECTOR_STORE_DIR.as_posix())
-
+    st.session_state.vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
 
 def format_docs(docs):
     return [doc for doc in docs]
-
 
 def output_chunks(chain, query):
     for chunk in chain.stream(
@@ -66,8 +50,7 @@ def output_chunks(chain, query):
 
 
 def ask_unify():
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vectorstore = FAISS.load_local(LOCAL_VECTOR_STORE_DIR.as_posix(), embeddings, allow_dangerous_deserialization=True)
+    vectorstore = st.session_state.vector_store
     retriever = vectorstore.as_retriever()
 
     model = ChatUnify(model=st.session_state.endpoint, unify_api_key=st.session_state.unify_api_key)
@@ -149,7 +132,6 @@ def process_inputs():
             perform_vector_storage(text_chunks)
 
             # delete the files when the session ends
-            handle_file(LOCAL_VECTOR_STORE_DIR.as_posix())
 
             st.session_state.processed_input = True
             st.success('File(s) Submitted successfully!')
@@ -236,7 +218,6 @@ def chat_bot():
 
         with st.sidebar:
             st.button("Clear Chat History", type="primary", on_click=clear_history)
-
 
 def main():
     landing_page()
