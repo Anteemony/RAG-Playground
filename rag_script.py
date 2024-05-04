@@ -56,6 +56,15 @@ def format_docs(docs):
     return [doc for doc in docs]
 
 
+def output_chunks(chain, query):
+    for chunk in chain.stream(
+            {"input": query},
+            config={"configurable": {"session_id": "abc123"}}
+    ):
+        if "answer" in chunk.keys():
+            yield chunk["answer"]
+
+
 def ask_unify():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = FAISS.load_local(LOCAL_VECTOR_STORE_DIR.as_posix(), embeddings, allow_dangerous_deserialization=True)
@@ -217,15 +226,13 @@ def chat_bot():
         st.chat_message("human").write(query)
 
         conversational_rag_chain = ask_unify()
-        response = conversational_rag_chain.invoke(
-                {"input": query},
-                config={"configurable": {"session_id": "abc123"}}
-            )["answer"]
 
-        st.chat_message("assistant").write(response)
+        response = st.chat_message("assistant").write_stream(
+            output_chunks(conversational_rag_chain, query)
+        )
+
         st.session_state.messages.append((query, response))
 
-        # How to stream output?
 
         with st.sidebar:
             st.button("Clear Chat History", type="primary", on_click=clear_history)
