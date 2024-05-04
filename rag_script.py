@@ -16,6 +16,13 @@ import streamlit as st
 def field_callback(field):
     st.toast(f"{field} Updated Successfully!", icon="🎉")
 
+@st.experimental_dialog("Source Code", width="large")
+def generate_src():
+    code = '''
+        def hello():
+            print("RAG Source Code!")
+        '''
+    st.code(code, language='python')
 
 def clear_history():
     if "store" in st.session_state:
@@ -144,8 +151,18 @@ def process_inputs():
 def landing_page():
     st.set_page_config("Unify Demos: RAG")
 
+    st.title("Langchain RAG Playground 🛝")
+    st.text("Chat with your PDF file using the LLM of your choice")
+    st.write('''
+                    Usage: 
+                    1. Input your **Unify API Key.** If you don’t have one yet, log in to the [console](https://console.unify.ai/) to get yours.
+                    2. Select the **Model** and endpoint provider of your choice from the drop down. You can find both model and provider information in the [benchmark interface](https://unify.ai/hub).
+                    3. Upload your document(s) and click the Submit button
+                    4. Chat Away!
+                    ''')
+
     with st.sidebar:
-        tab1, tab2, tab3 = st.tabs(["🏠Home", "🛝Playground", "🎉Generate"])
+        tab1, tab2, tab3 = st.tabs(["🏠Home", "🛝Playground", "🎉Generate Code"])
 
         with tab1:
             # input for Unify API Key
@@ -193,23 +210,59 @@ def landing_page():
                                                          accept_multiple_files=True)
             if st.button("Submit Document(s)"):
                 process_inputs()
+
+            # Clear Chat History Button
+            if "messages" in st.session_state:
+                if len(st.session_state.messages) > 0:
+                    st.button("Clear Chat History", type="primary", on_click=clear_history)
+
         with tab2:
-            st.write("coming soon..")
+            st.write("**Adjust Parameters** (Coming Soon🚧) ")
+
+            with st.expander("Prompt Template"):
+                st.text_input("System Prompt")
+                st.text_input("Hub link")
+                st.button("Reset", on_click=lambda: None, key="prompt_template_reset")
+
+            with st.expander("Model"):
+                st.slider("temperature")
+                st.button("Reset", on_click=lambda: None, key="model_param_reset")
+
+            with st.expander("Text Splitter"):
+                st.slider("chunk_size")
+                st.slider("chunk_overlap")
+                st.button("Reset", on_click=lambda: None, key="text_splitter_param_reset")
+
+            with st.expander("Retirever"):
+                st.selectbox("Search Type", options=["similarity", "mmr", "similarity_score_threshold"])
+                st.slider("k")
+                st.slider("max_tokens_retrieved")
+                st.slider("score_threshold")
+                st.slider("fetch_k")
+                st.slider("lambda_mult")
+                st.text_input("filter")
+                st.button("Reset", on_click=lambda: None, key="retriever_param_reset")
+
+            col1, col2 = st.columns([1, 0.5])
+
+            with col1:
+                st.button("Apply Configuration", on_click=lambda: None, key="apply_params_config", type="primary")
+            with col2:
+                st.button("Reset all", on_click=lambda: None, key="all_params_reset")
+
+
         with tab3:
-            st.write("coming soon..")
+            st.write("Finished adjusting the parameters to fit your use case? Get your code here.")
+            st.write(" Feature coming soon.. 🚧")
+            st.write("**Model**: ", st.session_state.endpoint)
+            st.write("**Vectorestore**: ", "FAISS (LOCAL)")
+            st.write("**Embedding Model**: ", "HuggingFaceEmbeddings")
+
+            if st.button("Generate Source Code", type="primary"):
+                generate_src()
 
 
 def chat_bot():
-    st.title("Langchain RAG Playground 🛝")
-    st.text("Chat with your PDF file using the LLM of your choice")
-    st.write('''
-                Usage: 
-                1. Input your **Unify API Key.** If you don’t have one yet, log in to the [console](https://console.unify.ai/) to get yours.
-                2. Select the **Model** and endpoint provider of your choice from the drop down. You can find both model and provider information in the [benchmark interface](https://unify.ai/hub).
-                3. Upload your document(s) and click the Submit button
-                4. Chat Away!
-                ''')
-
     if "messages" not in st.session_state:
         st.session_state.messages = []
     #
@@ -232,10 +285,6 @@ def chat_bot():
         )
 
         st.session_state.messages.append((query, response))
-        
-    if len(st.session_state.messages) > 0:
-        with st.sidebar:
-            st.button("Clear Chat History", type="primary", on_click=clear_history)
 
 
 def main():
