@@ -1,10 +1,15 @@
 from PyPDF2 import PdfReader
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
+from langchain.chains.retrieval import create_retrieval_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_unify.chat_models import ChatUnify
-from langchain.prompts import PromptTemplate
-from langchain.chains import ConversationalRetrievalChain
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 import streamlit as st
 
 import random, string
@@ -47,44 +52,67 @@ def perform_vector_storage(text_chunks):
     vector_store.save_local(LOCAL_VECTOR_STORE_DIR.as_posix())
 
 
-def ask_unify(query):
+def format_docs(docs):
+    return [doc for doc in docs]
+
+
+def ask_unify():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = FAISS.load_local(LOCAL_VECTOR_STORE_DIR.as_posix(), embeddings, allow_dangerous_deserialization=True)
     retriever = vectorstore.as_retriever()
 
-    prompt_template = '''
-    Use the following context (delimited by <ctx></ctx>) and the chat history (delimited by <hs></hs>) to answer the question (delimited by <qn></qn>):
-    ------
-    <ctx>
-    {context}
-    </ctx>
-    ------
-    <hs>
-    {chat_history}
-    </hs>
-    ------
-    <qn>
-    {question}
-    </qn>
-    Answer:
-    '''
     model = ChatUnify(model=st.session_state.endpoint, unify_api_key=st.session_state.unify_api_key)
-    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "chat_history", "question"])
 
-
-    qa_chain = ConversationalRetrievalChain.from_llm(
-        llm=model,
-        chain_type="stuff",
-        retriever=retriever,
-        return_source_documents=True,
-        combine_docs_chain_kwargs={"prompt": prompt},
-        max_tokens_limit=4000,
-        rephrase_question=False,
+    contextualize_q_system_prompt = """Given a chat history and the latest user question \
+    which might reference context in the chat history, formulate a standalone question \
+    which can be understood without the chat history. Do NOT answer the question, \
+    just reformulate it if needed and otherwise return it as is."""
+    contextualize_q_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", contextualize_q_system_prompt),
+            MessagesPlaceholder("chat_history"),
+            ("human", "{input}"),
+        ]
     )
 
-    response = qa_chain({"question": query, 'chat_history': st.session_state.messages}, return_only_outputs=True)
+    history_aware_retriever = create_history_aware_retriever(
+        model, retriever | format_docs, contextualize_q_prompt
+    )
 
-    return response["answer"]
+    qa_system_prompt = """You are an assistant for question-answering tasks. \
+    Use the following pieces of retrieved context to answer the question. \
+    If you don't know the answer, just say that you don't know. \
+    Use three sentences maximum and keep the answer concise.\
+
+    {context}"""
+    qa_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", qa_system_prompt),
+            MessagesPlaceholder("chat_history"),
+            ("human", "{input}"),
+        ]
+    )
+    question_answer_chain = create_stuff_documents_chain(model, qa_prompt)
+
+    rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+
+    if "store" not in st.session_state:
+        st.session_state.store = {}
+
+    def get_session_history(session_id: str) -> BaseChatMessageHistory:
+        if session_id not in st.session_state.store:
+            st.session_state.store[session_id] = ChatMessageHistory()
+        return st.session_state.store[session_id]
+
+    conversational_rag_chain = RunnableWithMessageHistory(
+        rag_chain,
+        get_session_history,
+        input_messages_key="input",
+        history_messages_key="chat_history",
+        output_messages_key="answer"
+    )
+
+    return conversational_rag_chain
 
 
 def process_inputs():
@@ -115,7 +143,7 @@ def process_inputs():
             handle_file(LOCAL_VECTOR_STORE_DIR.as_posix())
 
             st.session_state.processed_input = True
-            st.success('File(s) Submitted successfuly!')
+            st.success('File(s) Submitted successfully!')
 
 
 def landing_page():
@@ -187,9 +215,17 @@ def chat_bot():
             return
 
         st.chat_message("human").write(query)
-        response = ask_unify(query)
+
+        conversational_rag_chain = ask_unify()
+        response = conversational_rag_chain.invoke(
+                {"input": query},
+                config={"configurable": {"session_id": "abc123"}}
+            )["answer"]
+
         st.chat_message("assistant").write(response)
         st.session_state.messages.append((query, response))
+
+        # How to stream output?
 
         with st.sidebar:
             st.button("Clear Chat History", type="primary", on_click=clear_history)
