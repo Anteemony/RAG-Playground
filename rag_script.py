@@ -217,38 +217,51 @@ def landing_page():
                     st.button("Clear Chat History", type="primary", on_click=clear_history)
 
         with tab2:
-            st.write("**Adjust Parameters** (Coming Soon🚧) ")
+            st.write("Feature Coming Soon🚧")
 
-            with st.expander("Prompt Template"):
-                st.text_input("System Prompt")
-                st.text_input("Hub link")
-                st.button("Reset", on_click=lambda: None, key="prompt_template_reset")
+            with st.expander("Vector Storage"):
+                if st.toggle("Use Local Vector Storage"):
+                    st.selectbox("Select Local Vector Storage", options=["FAISS", "Chroma"])
+                else:
+                    st.selectbox("Select Online Vector Storage", options=["pinecone", "pinecone_similar"])
 
-            with st.expander("Model"):
-                st.slider("temperature")
-                st.button("Reset", on_click=lambda: None, key="model_param_reset")
+            with st.expander("Emebedding Model"):
+                st.selectbox("Select Embedding Model", options=["HuggingFaceEmbeddings", "ChatOpenAIEmbeddings", "GPT4AllEmbeddings"])
 
-            with st.expander("Text Splitter"):
-                st.slider("chunk_size")
-                st.slider("chunk_overlap")
-                st.button("Reset", on_click=lambda: None, key="text_splitter_param_reset")
+            with st.container(border=True):
 
-            with st.expander("Retirever"):
-                st.selectbox("Search Type", options=["similarity", "mmr", "similarity_score_threshold"])
-                st.slider("k")
-                st.slider("max_tokens_retrieved")
-                st.slider("score_threshold")
-                st.slider("fetch_k")
-                st.slider("lambda_mult")
-                st.text_input("filter")
-                st.button("Reset", on_click=lambda: None, key="retriever_param_reset")
+                st.write("**Adjust Parameters** ")
 
-            col1, col2 = st.columns([1, 0.5])
+                with st.expander("Prompt Template"):
+                    st.text_input("System Prompt")
+                    st.text_input("Hub link")
+                    st.button("Reset", on_click=lambda: None, key="prompt_template_reset")
 
-            with col1:
-                st.button("Apply Configuration", on_click=lambda: None, key="apply_params_config", type="primary")
-            with col2:
-                st.button("Reset all", on_click=lambda: None, key="all_params_reset")
+                with st.expander("Model"):
+                    st.slider("temperature")
+                    st.button("Reset", on_click=lambda: None, key="model_param_reset")
+
+                with st.expander("Text Splitter"):
+                    st.slider("chunk_size")
+                    st.slider("chunk_overlap")
+                    st.button("Reset", on_click=lambda: None, key="text_splitter_param_reset")
+
+                with st.expander("Retirever"):
+                    st.selectbox("Search Type", options=["similarity", "mmr", "similarity_score_threshold"])
+                    st.slider("k")
+                    st.slider("max_tokens_retrieved")
+                    st.slider("score_threshold")
+                    st.slider("fetch_k")
+                    st.slider("lambda_mult")
+                    st.text_input("filter")
+                    st.button("Reset", on_click=lambda: None, key="retriever_param_reset")
+
+                col1, col2 = st.columns([1, 0.5])
+        
+                with col1:
+                    st.button("Apply Configurations", on_click=lambda: None, key="apply_params_config", type="primary")
+                with col2:
+                    st.button("Reset all", on_click=lambda: None, key="all_params_reset")
 
 
         with tab3:
