@@ -12,8 +12,10 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 import streamlit as st
 
+
 def field_callback(field):
     st.toast(f"{field} Updated Successfully!", icon="🎉")
+
 
 def clear_history():
     if "store" in st.session_state:
@@ -21,6 +23,7 @@ def clear_history():
 
     if "messages" in st.session_state:
         st.session_state.messages = []
+
 
 @st.cache_data
 def extract_pdf(pdf_docs):
@@ -32,13 +35,16 @@ def extract_pdf(pdf_docs):
 
     return text
 
+
 @st.cache_data
 def perform_vector_storage(text_chunks):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     st.session_state.vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
 
+
 def format_docs(docs):
     return [doc for doc in docs]
+
 
 def output_chunks(chain, query):
     for chunk in chain.stream(
@@ -119,9 +125,6 @@ def process_inputs():
             # Extract text from PDF
             text = extract_pdf(st.session_state.pdf_docs)
 
-            # Delete PDF from Session and save space
-            # del st.session_state["pdf_docs"]
-
             st.write("Splitting Text")
             # convert to text chunks
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
@@ -130,8 +133,6 @@ def process_inputs():
             st.write("Performing Vector Storage")
             # Perform vector storage
             perform_vector_storage(text_chunks)
-
-            # delete the files when the session ends
 
             st.session_state.processed_input = True
             st.success('File(s) Submitted successfully!')
@@ -215,9 +216,9 @@ def chat_bot():
 
         st.session_state.messages.append((query, response))
 
-
         with st.sidebar:
             st.button("Clear Chat History", type="primary", on_click=clear_history)
+
 
 def main():
     landing_page()
