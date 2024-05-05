@@ -69,7 +69,14 @@ def ask_unify():
 
     retriever = st.session_state.vector_store.as_retriever()
 
-    model = ChatUnify(model=st.session_state.endpoint, unify_api_key=st.session_state.unify_api_key)
+    if "model_temperature" not in st.session_state:
+        st.session_state.model_temperature = 0.3
+
+    model = ChatUnify(
+        model=st.session_state.endpoint,
+        unify_api_key=st.session_state.unify_api_key,
+        temperature=st.session_state.model_temperature
+    )
 
     contextualize_q_system_prompt = """Given a chat history and the latest user question \
     which might reference context in the chat history, formulate a standalone question \
@@ -135,9 +142,17 @@ def process_inputs():
             # Extract text from PDF
             text = extract_pdf(st.session_state.pdf_docs)
 
+            if "chunk_size" not in st.session_state:
+                st.session_state.chunk_size = 1000
+            if "chunk_overlap" not in st.session_state:
+                st.session_state.chunk_overlap = 100
+
             st.write("Splitting Text")
             # convert to text chunks
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=st.session_state.chunk_size,
+                chunk_overlap=st.session_state.chunk_overlap
+            )
             text_chunks = text_splitter.split_text(text)
 
             st.write("Performing Vector Storage")
@@ -223,7 +238,9 @@ def landing_page():
                 if st.toggle("Use Local Vector Storage"):
                     st.selectbox("Select Local Vector Storage", options=["FAISS", "Chroma"])
                 else:
-                    st.selectbox("Select Online Vector Storage", options=["pinecone", "pinecone_similar"])
+                    online_vectore_storage = st.selectbox("Select Online Vector Storage", options=["pinecone", "pinecone_similar"])
+                    if online_vectore_storage == "pinecone":
+                        st.text_input("Pincecone API Key", type="password")
 
             with st.expander("Emebedding Model"):
                 st.selectbox("Select Embedding Model", options=["HuggingFaceEmbeddings", "ChatOpenAIEmbeddings", "GPT4AllEmbeddings"])
@@ -238,12 +255,12 @@ def landing_page():
                     st.button("Reset", on_click=lambda: None, key="prompt_template_reset")
 
                 with st.expander("Model"):
-                    st.slider("temperature")
+                    model_temperature = st.slider("temperature", min_value=0.0, max_value=1.0, step=0.1)
                     st.button("Reset", on_click=lambda: None, key="model_param_reset")
 
                 with st.expander("Text Splitter"):
-                    st.slider("chunk_size")
-                    st.slider("chunk_overlap")
+                    chunk_size = st.slider("chunk_size", min_value=100, max_value=10000, step=100)
+                    chunk_overlap = st.slider("chunk_overlap", min_value=100, max_value=1000, step=100)
                     st.button("Reset", on_click=lambda: None, key="text_splitter_param_reset")
 
                 with st.expander("Retirever"):
@@ -256,12 +273,24 @@ def landing_page():
                     st.text_input("filter")
                     st.button("Reset", on_click=lambda: None, key="retriever_param_reset")
 
-                col1, col2 = st.columns([1, 0.5])
+                st.session_state.applied_config=False
+
+                col1, col2 = st.columns([1, 1])
         
                 with col1:
-                    st.button("Apply Configurations", on_click=lambda: None, key="apply_params_config", type="primary")
+                    if st.button("Apply Config", on_click=field_callback, args=("Parameters", ), key="apply_params_config", type="primary"):
+                        st.session_state.model_temperature = model_temperature
+                        st.session_state.chunk_size = chunk_size
+                        st.session_state.chunk_overlap = chunk_overlap
+                        st.session_state.applied_config = True
+
                 with col2:
                     st.button("Reset all", on_click=lambda: None, key="all_params_reset")
+
+                # Process Documents outside Column
+                if st.session_state.applied_config:
+                    process_inputs()
+                    st.session_state.applied_config = False
 
 
         with tab3:
