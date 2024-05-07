@@ -13,7 +13,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 def ask_unify():
     if "vector_store" not in st.session_state:
         process_inputs()
-
+        
     retriever = st.session_state.vector_store.as_retriever()
 
     model = ChatUnify(
@@ -21,11 +21,23 @@ def ask_unify():
         unify_api_key=st.session_state.unify_api_key,
         temperature=st.session_state.model_temperature
     )
-
+    
+    if "chat_memory" not in st.session_state:
+        st.session_state.chat_memory = True
+        
+    if st.session_state.chat_memory == True:
+        return Prompt_chain_with_memory(model, retriever)
+    else:
+        return simple_rag_system (model, retriever)
+    
+        
+def Prompt_chain_with_memory(model, retriever):
+    
     contextualize_q_system_prompt = """Given a chat history and the latest user question \
     which might reference context in the chat history, formulate a standalone question \
     which can be understood without the chat history. Do NOT answer the question, \
     just reformulate it if needed and otherwise return it as is."""
+
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", contextualize_q_system_prompt),
@@ -35,15 +47,15 @@ def ask_unify():
     )
 
     history_aware_retriever = create_history_aware_retriever(
-        model, retriever | format_docs, contextualize_q_prompt
+    model, retriever | format_docs, contextualize_q_prompt
     )
 
     qa_system_prompt = """You are an assistant for question-answering tasks. \
     Use the following pieces of retrieved context to answer the question. \
     If you don't know the answer, just say that you don't know. \
     Use three sentences maximum and keep the answer concise.\
-
     {context}"""
+    
     qa_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", qa_system_prompt),
@@ -51,6 +63,7 @@ def ask_unify():
             ("human", "{input}"),
         ]
     )
+    
     question_answer_chain = create_stuff_documents_chain(model, qa_prompt)
 
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
@@ -69,6 +82,26 @@ def ask_unify():
     )
 
     return conversational_rag_chain
+    
+def simple_rag_system(model, retriever):
+    # Simplified RAG system without using chat history
+    qa_system_prompt = """You are an assistant for question-answering tasks. \
+    Use the following pieces of retrieved context to answer the question. \
+    If you don't know the answer, just say that you don't know. \
+    Use three sentences maximum and keep the answer concise.\
+    {context}"""
+        
+    qa_prompt_no_memory = ChatPromptTemplate.from_messages(
+        [
+            ("system", qa_system_prompt),
+            ("human", "{input}"),
+        ]
+    )
+    # Simple retriever setup, similar but without using history
+    question_answer_chain = create_stuff_documents_chain(model, qa_prompt_no_memory)
+    chain = create_retrieval_chain(retriever, question_answer_chain)
+    
+    return chain
 
 
 def chat_bot():
@@ -80,10 +113,10 @@ def chat_bot():
 
         st.chat_message("human").write(query)
 
-        conversational_rag_chain = ask_unify()
+        Rag_engine = ask_unify()
 
         response = st.chat_message("assistant").write_stream(
-            output_chunks(conversational_rag_chain, query)
+            output_chunks(Rag_engine, query)
         )
 
         st.session_state.messages.append((query, response))
