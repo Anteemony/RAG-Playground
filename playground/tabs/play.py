@@ -22,19 +22,23 @@ def playground_tab():
 
         with st.container(border=True):
             st.write("**Adjust Parameters** ")
-
-            with st.expander("Prompt Template"):
-                st.text_input("System Prompt")
-                st.text_input("Hub link")
-                st.button("Reset", on_click=lambda: None, key="prompt_template_reset")
+            
+            
+            if st.toggle("Chat history enabled", value = True):
+                st.session_state.chat_memory = True
+            else:
+                st.session_state.chat_memory = False
+                    
+            
 
             with st.expander("Model"):
                 model_temperature = st.slider("temperature", min_value=0.0, max_value=1.0, step=0.1)
                 st.button("Reset", on_click=lambda: None, key="model_param_reset")
 
             with st.expander("Text Splitter"):
-                chunk_size = st.slider("chunk_size", min_value=100, max_value=10000, step=100)
-                chunk_overlap = st.slider("chunk_overlap", min_value=100, max_value=1000, step=100)
+                chunk_size = st.slider("chunk_size", min_value=200, max_value=10000, step=100)
+                max_overlap = min(chunk_size-99, 1000)
+                chunk_overlap = st.slider("Chunk Overlap", min_value=100, max_value= max_overlap, step=100)
                 st.button("Reset", on_click=lambda: None, key="text_splitter_param_reset")
 
             with st.expander("Retirever"):
