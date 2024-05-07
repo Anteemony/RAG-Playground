@@ -24,10 +24,10 @@ def playground_tab():
             st.write("**Adjust Parameters** ")
             
             
-            if st.toggle("Chat history enabled", value = True, disabled = False):
-                chat_memory = True
+            if st.toggle("Chat history enabled", value = True):
+                st.session_state.chat_memory = True
             else:
-                chat_memory = False
+                st.session_state.chat_memory = False
                     
             
 
