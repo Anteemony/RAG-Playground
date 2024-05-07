@@ -9,33 +9,7 @@ from playground import st
 from playground.document_processing import process_inputs, format_docs, output_chunks
 from langchain_community.chat_message_histories import ChatMessageHistory
 
-
-def ask_unify():
-    if "vector_store" not in st.session_state:
-        process_inputs()
-        
-    retriever = st.session_state.vector_store.as_retriever()
-
-    if "model_temperature" not in st.session_state:
-        st.session_state.model_temperature = 0.3    
-        
-
-    model = ChatUnify(
-        model=st.session_state.endpoint,
-        unify_api_key=st.session_state.unify_api_key,
-        temperature=st.session_state.model_temperature
-    )
-    
-    if "chat_memory" not in st.session_state:
-        st.session_state.chat_memory = True
-        
-    if st.session_state.chat_memory == True:
-        return Prompt_chain_with_memory(model, retriever)
-    else:
-        return simple_rag_system (model, retriever)
-    
-        
-def Prompt_chain_with_memory(model, retriever):
+def create_conversational_rag_chain(model, retriever):
     
     contextualize_q_system_prompt = """Given a chat history and the latest user question \
     which might reference context in the chat history, formulate a standalone question \
@@ -72,9 +46,6 @@ def Prompt_chain_with_memory(model, retriever):
 
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-    if "store" not in st.session_state:
-            st.session_state.store = {}
-
     def get_session_history(session_id: str) -> BaseChatMessageHistory:
         if session_id not in st.session_state.store:
             st.session_state.store[session_id] = ChatMessageHistory()
@@ -85,12 +56,12 @@ def Prompt_chain_with_memory(model, retriever):
         get_session_history,
         input_messages_key="input",
         history_messages_key="chat_history",
-        output_messages_key="answer"
+        output_messages_key="answer",
     )
 
     return conversational_rag_chain
     
-def simple_rag_system(model, retriever):
+def create_qa_chain(model, retriever):
     # Simplified RAG system without using chat history
     qa_system_prompt = """You are an assistant for question-answering tasks. \
     Use the following pieces of retrieved context to answer the question. \
@@ -111,14 +82,26 @@ def simple_rag_system(model, retriever):
     return chain
 
 
+def ask_unify():
+    if "vector_store" not in st.session_state:
+        process_inputs()
+        
+    retriever = st.session_state.vector_store.as_retriever()
+
+    model = ChatUnify(
+        model=st.session_state.endpoint,
+        unify_api_key=st.session_state.unify_api_key,
+        temperature=st.session_state.model_temperature
+    )
+
+    # Return the approriate chain        
+    if st.session_state.chat_memory == True:
+        return create_conversational_rag_chain(model, retriever)
+    else:
+        return create_qa_chain (model, retriever)
+
+
 def chat_bot():
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    #
-    for message in st.session_state.messages:
-        st.chat_message('human').write(message[0])
-        st.chat_message('assistant').write(message[1])
-    #
     if query := st.chat_input("Ask your document anything...", key="query"):
 
         if "processed_input" not in st.session_state:
@@ -133,4 +116,5 @@ def chat_bot():
             output_chunks(Rag_engine, query)
         )
 
-        st.session_state.messages.append((query, response))
+        if st.session_state.chat_memory:
+            st.session_state.messages.append((query, response))
