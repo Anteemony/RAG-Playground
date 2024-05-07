@@ -7,14 +7,6 @@ def playground_tab():
 
     with st.container(border=True):
 
-        with st.container(border=True):
-            st.write("**Conversational Bot**")
-            st.write("Disable for a simple Q&A app")
-            if st.toggle("Conversational Bot", value = True):
-                    st.session_state.chat_memory = True
-            else:
-                st.session_state.chat_memory = False
-
         with st.expander("Vector Storage"):
             if st.toggle("Use Online Vector Storage"):
                 vector_selection = st.selectbox("Select Online Vector Storage 🚧", options=["pinecone"])
@@ -40,9 +32,9 @@ def playground_tab():
 
             with st.expander("Text Splitter"):
 
-                chunk_size = st.slider("chunk_size", min_value=200, max_value=10000, step=100)
+                chunk_size = st.slider("chunk_size", min_value=200, max_value=10000, step=100, value=st.session_state.chunk_size)
                 max_overlap = min(chunk_size-99, 1000)
-                chunk_overlap = st.slider("Chunk Overlap", min_value=100, max_value= max_overlap, step=100)
+                chunk_overlap = st.slider("Chunk Overlap", min_value=100, max_value= max_overlap, step=100, value=st.session_state.chunk_overlap)
                 
                 st.button("Reset", on_click=lambda: None, key="text_splitter_param_reset")
 
@@ -58,6 +50,18 @@ def playground_tab():
 
             st.session_state.applied_config = False
 
+        with st.expander("Extras"):
+            with st.container(border=True):
+                st.write("**Conversational Bot**")
+                st.write("Enable for a history aware chatbot")
+                st.write("Disable for a simple Q&A app with no history attached.")
+
+                chat_memory = st.session_state.chat_memory
+                if st.toggle("Conversational Bot", value = True):
+                    chat_memory = True
+                else:
+                    chat_memory = False
+
         col1, col2 = st.columns([1, 1])
 
         with col1:
@@ -68,6 +72,7 @@ def playground_tab():
                 st.session_state.model_temperature = model_temperature
                 st.session_state.chunk_size = chunk_size
                 st.session_state.chunk_overlap = chunk_overlap
+                st.session_state.chat_memory = chat_memory
 
                 if st.session_state.chat_memory == False:
                     # Clear message display history

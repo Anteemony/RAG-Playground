@@ -24,6 +24,7 @@ def init_keys():
     session_add("chat_memory", True)
 
 
+
 def field_callback(field):
     st.toast(f"{field} Updated Successfully!", icon="🎉")
 
