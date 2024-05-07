@@ -7,6 +7,14 @@ def playground_tab():
 
     with st.container(border=True):
 
+        with st.container(border=True):
+            st.write("**Conversational Bot**")
+            st.write("Disable for a simple Q&A app")
+            if st.toggle("Conversational Bot", value = True):
+                    st.session_state.chat_memory = True
+            else:
+                st.session_state.chat_memory = False
+
         with st.expander("Vector Storage"):
             if st.toggle("Use Online Vector Storage"):
                 vector_selection = st.selectbox("Select Online Vector Storage 🚧", options=["pinecone"])
@@ -25,11 +33,6 @@ def playground_tab():
 
         with st.container(border=True):
             st.write("**Adjust Parameters** ")
-            
-            if st.toggle("Chat history enabled", value = True):
-                st.session_state.chat_memory = True
-            else:
-                st.session_state.chat_memory = False
 
             with st.expander("Model"):
                 model_temperature = st.slider("temperature", min_value=0.0, max_value=1.0, step=0.1, value=st.session_state.model_temperature)
@@ -65,6 +68,11 @@ def playground_tab():
                 st.session_state.model_temperature = model_temperature
                 st.session_state.chunk_size = chunk_size
                 st.session_state.chunk_overlap = chunk_overlap
+
+                if st.session_state.chat_memory == False:
+                    # Clear message display history
+                    st.session_state.messages = []
+
                 st.session_state.applied_config = True
 
         with col2:

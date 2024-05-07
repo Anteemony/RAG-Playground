@@ -21,6 +21,7 @@ def init_keys():
     session_add("messages", [])
     session_add("model_temperature", 0.3)
     session_add("store", {})
+    session_add("chat_memory", True)
 
 
 def field_callback(field):
