@@ -16,9 +16,6 @@ def ask_unify():
 
     retriever = st.session_state.vector_store.as_retriever()
 
-    if "model_temperature" not in st.session_state:
-        st.session_state.model_temperature = 0.3
-
     model = ChatUnify(
         model=st.session_state.endpoint,
         unify_api_key=st.session_state.unify_api_key,
@@ -58,9 +55,6 @@ def ask_unify():
 
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-    if "store" not in st.session_state:
-        st.session_state.store = {}
-
     def get_session_history(session_id: str) -> BaseChatMessageHistory:
         if session_id not in st.session_state.store:
             st.session_state.store[session_id] = ChatMessageHistory()
@@ -71,20 +65,13 @@ def ask_unify():
         get_session_history,
         input_messages_key="input",
         history_messages_key="chat_history",
-        output_messages_key="answer"
+        output_messages_key="answer",
     )
 
     return conversational_rag_chain
 
 
 def chat_bot():
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    #
-    for message in st.session_state.messages:
-        st.chat_message('human').write(message[0])
-        st.chat_message('assistant').write(message[1])
-    #
     if query := st.chat_input("Ask your document anything...", key="query"):
 
         if "processed_input" not in st.session_state:

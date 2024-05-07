@@ -44,27 +44,25 @@ def extract_pdf(pdf_docs):
 
 
 @st.cache_data
-def perform_vector_storage(text_chunks):
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+def faiss_vector_storage(text_chunks):
+    vector_store = None
+
+    if st.session_state.embedding_model == "HuggingFaceEmbeddings":
+        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+
     return vector_store
 
 def process_inputs():
+
     if not st.session_state.unify_api_key or not st.session_state.endpoint or not st.session_state.pdf_docs:
         st.warning("Please enter the missing fields and upload your pdf document(s)")
     else:
         with st.status("Processing Document(s)"):
-            # Refresh message history
-            st.session_state.messages = []
 
             st.write("Extracting Text")
             # Extract text from PDF
             text = extract_pdf(st.session_state.pdf_docs)
-
-            if "chunk_size" not in st.session_state:
-                st.session_state.chunk_size = 1000
-            if "chunk_overlap" not in st.session_state:
-                st.session_state.chunk_overlap = 100
 
             st.write("Splitting Text")
             # convert to text chunks
@@ -75,8 +73,10 @@ def process_inputs():
             text_chunks = text_splitter.split_text(text)
 
             st.write("Performing Vector Storage")
+
             # Perform vector storage
-            st.session_state.vector_store = perform_vector_storage(text_chunks)
+            if st.session_state.vector_selection == "FAISS":
+                st.session_state.vector_store = faiss_vector_storage(text_chunks)
 
             st.session_state.processed_input = True
             st.success('File(s) Submitted successfully!')
