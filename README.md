@@ -31,3 +31,5 @@ To run the application locally:
 |------|----------------|
 | Anthony Okonneh | [AO](https://github.com/Anteemony) |
 | Oscar Arroyo Vega | [OAV](https://github.com/OscarArroyoVega) |
+| Martin Oywa | [Martin Oywa](https://github.com/martinoywa) |
+
