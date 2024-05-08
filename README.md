@@ -8,7 +8,9 @@ Play intuitively tuning the model hyperparameters as temperature, chunk size, ch
 You find more model/provider information in the [Unify benchmark interface](https://unify.ai/hub).
 
 ## Quick Demo
--ebeded video-
+https://github.com/Anteemony/RAG-Playground/assets/103512255/0d944420-e3e8-43cb-aad3-0a459d8d0318
+
+
 
 ## Usage:
 1. Go to the application: https://unify-rag-playground.streamlit.app/
