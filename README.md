@@ -7,8 +7,11 @@ Play intuitively tuning the model hyperparameters as temperature, chunk size, ch
 
 You find more model/provider information in the [Unify benchmark interface](https://unify.ai/hub).
 
+
 ## Quick Demo
+
 https://github.com/Anteemony/RAG-Playground/assets/103512255/0d944420-e3e8-43cb-aad3-0a459d8d0318
+
 
 
 
@@ -19,6 +22,7 @@ https://github.com/Anteemony/RAG-Playground/assets/103512255/0d944420-e3e8-43cb-
 4. Upload your document(s) and click the Submit button
 5. Play!
 
+
 ## Repository and Deployment
 Repository is located here https://github.com/Anteemony/RAG-Playground 
 
@@ -26,6 +30,7 @@ To run the application locally:
 1. Clone the repo in your local machine
 2. Create a virtual envirnoment and install requirements.txt
 3. Run rag_script.py from Streamlit module ( Python -m run streamlit rag_script.py)
+
 
 ## Contributors
 
