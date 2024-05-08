@@ -37,6 +37,6 @@ To run the application locally:
 | Name | GitHub Profile |
 |------|----------------|
 | Anthony Okonneh | [AO](https://github.com/Anteemony) |
-| Oscar Arroyo Vega | [OAV](https://github.com/OscarArroyoVega) |
+| Oscar Arroyo Vega | [OscarAV](https://github.com/OscarArroyoVega) |
 | Martin Oywa | [Martin Oywa](https://github.com/martinoywa) |
 
