@@ -1,5 +1,6 @@
 from playground import st
-from playground.document_processing import process_inputs, model_provider, dynamic_provider
+from playground.data.widget_data import model_provider, dynamic_provider
+from playground.document_processing import process_inputs
 from playground.utils import field_callback, clear_history
 
 
