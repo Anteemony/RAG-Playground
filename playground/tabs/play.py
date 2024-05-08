@@ -5,18 +5,19 @@ from playground.data.widget_data import model_reset_dict, splitter_reset_dict
 
 def playground_tab():
     st.write("🚧 => Feature Coming Soon")
+    st.write("Click the Apply Configuration button at the end after editing")
 
     with st.container(border=True):
 
         with st.expander("Vector Storage"):
             if st.toggle("Use Online Vector Storage"):
-                vector_selection = st.selectbox("Select Online Vector Storage 🚧", options=["pinecone"])
-                if vector_selection == "pinecone":
-                    st.text_input("Pinecone API Key", type="password", disabled=True)
-                    st.text_input("Pinecone Index", disabled=True)
+                vector_selection = st.selectbox("Select Online Vector Storage", options=["Pinecone"])
+                if vector_selection == "Pinecone":
+                    st.session_state.pinecone_api_key = st.text_input("Pinecone API Key", type="password")
+                    st.session_state.pinecone_index = st.text_input("Pinecone Index")
 
                     # Change it back to FAISS for now
-                    vector_selection = "FAISS"
+                    vector_selection = "Pinecone"
             else:
                 vector_selection = st.selectbox("Select Local Vector Storage", options=["FAISS"])
 
