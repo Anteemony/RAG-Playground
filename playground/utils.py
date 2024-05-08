@@ -24,7 +24,6 @@ def init_keys():
     session_add("chat_memory", True)
 
 
-
 def field_callback(field):
     st.toast(f"{field} Updated Successfully!", icon="🎉")
 
@@ -44,3 +43,17 @@ def clear_history():
 
     if "messages" in st.session_state:
         st.session_state.messages = []
+
+def reset_slider_value(reset_dict):
+    '''
+    :param reset_dict: Slider key and corresponding session_state key to reset to
+    The session_state key is expected to have been created in init_keys()
+
+    :return: None
+    '''
+
+    for key, value in reset_dict.items():
+        del st.session_state[value]
+        init_keys()
+
+        st.session_state[key] = st.session_state[value]
