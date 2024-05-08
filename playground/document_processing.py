@@ -4,6 +4,8 @@ from playground.data.widget_data import model_provider, dynamic_provider
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_pinecone import PineconeVectorStore
+import os
 
 
 @st.cache_data
@@ -26,6 +28,22 @@ def faiss_vector_storage(text_chunks):
         vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
 
     return vector_store
+
+def pinecone_vector_storage(text_chunks):
+    vector_store = None
+
+    os.environ['PINECONE_API_KEY'] = st.session_state.pinecone_api_key
+
+    if st.session_state.embedding_model == "HuggingFaceEmbeddings":
+        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        vector_store = PineconeVectorStore.from_texts(
+            text_chunks, 
+            embedding=embeddings, 
+            index_name=st.session_state.pinecone_index
+        )
+    
+    return vector_store
+    
 
 def process_inputs():
 
@@ -51,6 +69,9 @@ def process_inputs():
             # Perform vector storage
             if st.session_state.vector_selection == "FAISS":
                 st.session_state.vector_store = faiss_vector_storage(text_chunks)
+            
+            elif st.session_state.vector_selection == "Pinecone":
+                st.session_state.vector_store = pinecone_vector_storage(text_chunks)
 
             st.session_state.processed_input = True
             st.success('File(s) Submitted successfully!')
