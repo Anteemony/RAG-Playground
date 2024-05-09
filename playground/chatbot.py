@@ -6,11 +6,12 @@ from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_unify.chat_models import ChatUnify
 from playground import st
+from playground.utils import clear_history
 from playground.document_processing import process_inputs, format_docs, output_chunks
 from langchain_community.chat_message_histories import ChatMessageHistory
 
+
 def create_conversational_rag_chain(model, retriever):
-    
     contextualize_q_system_prompt = """Given a chat history and the latest user question \
     which might reference context in the chat history, formulate a standalone question \
     which can be understood without the chat history. Do NOT answer the question, \
@@ -25,7 +26,7 @@ def create_conversational_rag_chain(model, retriever):
     )
 
     history_aware_retriever = create_history_aware_retriever(
-    model, retriever | format_docs, contextualize_q_prompt
+        model, retriever | format_docs, contextualize_q_prompt
     )
 
     qa_system_prompt = """You are an assistant for question-answering tasks. \
@@ -33,7 +34,7 @@ def create_conversational_rag_chain(model, retriever):
     If you don't know the answer, just say that you don't know. \
     Use three sentences maximum and keep the answer concise.\
     {context}"""
-    
+
     qa_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", qa_system_prompt),
@@ -41,7 +42,7 @@ def create_conversational_rag_chain(model, retriever):
             ("human", "{input}"),
         ]
     )
-    
+
     question_answer_chain = create_stuff_documents_chain(model, qa_prompt)
 
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
@@ -60,7 +61,8 @@ def create_conversational_rag_chain(model, retriever):
     )
 
     return conversational_rag_chain
-    
+
+
 def create_qa_chain(model, retriever):
     # Simplified RAG system without using chat history
     qa_system_prompt = """You are an assistant for question-answering tasks. \
@@ -68,7 +70,7 @@ def create_qa_chain(model, retriever):
     If you don't know the answer, just say that you don't know. \
     Use three sentences maximum and keep the answer concise.\
     {context}"""
-        
+
     qa_prompt_no_memory = ChatPromptTemplate.from_messages(
         [
             ("system", qa_system_prompt),
@@ -78,15 +80,48 @@ def create_qa_chain(model, retriever):
     # Simple retriever setup, similar but without using history
     question_answer_chain = create_stuff_documents_chain(model, qa_prompt_no_memory)
     chain = create_retrieval_chain(retriever, question_answer_chain)
-    
+
     return chain
+
+
+def get_retriever():
+    '''
+    Set the corresponding search keyword arguments
+    based on the search type
+    :return: VectorStoreRetriever
+    '''
+    search_type = st.session_state.search_type
+    search_kwargs = {}
+
+    if st.session_state.search_type == "similarity":
+        search_kwargs = {"k": st.session_state.k}
+
+    elif st.session_state.search_type == "similarity_score_threshold":
+        search_kwargs = {
+            "k": st.session_state.k,
+            "score_threshold": st.session_state.score_threshold
+        }
+
+    elif st.session_state.search_type == "mmr":
+        search_kwargs = {
+            "k": st.session_state.k,
+            "fetch_k": st.session_state.fetch_k,
+            "lambda_mult": st.session_state.lambda_mult
+        }
+
+    retriever = st.session_state.vector_store.as_retriever(
+        search_type=search_type,
+        search_kwargs=search_kwargs
+    )
+
+    return retriever
 
 
 def ask_unify():
     if "vector_store" not in st.session_state:
         process_inputs()
-        
-    retriever = st.session_state.vector_store.as_retriever()
+
+    retriever = get_retriever()
 
     model = ChatUnify(
         model=st.session_state.endpoint,
@@ -98,7 +133,7 @@ def ask_unify():
     if st.session_state.chat_memory == True:
         return create_conversational_rag_chain(model, retriever)
     else:
-        return create_qa_chain (model, retriever)
+        return create_qa_chain(model, retriever)
 
 
 def chat_bot():
@@ -110,10 +145,10 @@ def chat_bot():
 
         st.chat_message("human").write(query)
 
-        Rag_engine = ask_unify()
+        rag_engine = ask_unify()
 
         response = st.chat_message("assistant").write_stream(
-            output_chunks(Rag_engine, query)
+            output_chunks(rag_engine, query)
         )
 
         if st.session_state.chat_memory:

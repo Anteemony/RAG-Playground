@@ -28,10 +28,9 @@ def home_tab():
                                                  accept_multiple_files=True)
 
     # Submit Button
-    if st.button("Submit Document(s)"):
+    if st.button("Submit Document(s)", type="primary"):
         process_inputs()
 
     # Clear Chat History Button
-    if "messages" in st.session_state:
-        if len(st.session_state.messages) > 0:
-            st.button("Clear Chat History", type="primary", on_click=clear_history)
+    if len(st.session_state.messages) > 0:
+        st.button("🧹 Clear Chat History", key="home_clear_history", on_click=clear_history)
