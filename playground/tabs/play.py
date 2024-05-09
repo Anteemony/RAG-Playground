@@ -39,7 +39,7 @@ def playground_tab():
                 chunk_size = st.slider("chunk_size", key="slider_chunk_size", min_value=200, max_value=10000, step=100,
                                        value=st.session_state.chunk_size)
                 max_overlap = min(chunk_size - 99, 1000)
-                chunk_overlap = st.slider("Chunk Overlap", key="slider_chunk_overlap", min_value=100,
+                chunk_overlap = st.slider("Chunk Overlap", key="slider_chunk_overlap", min_value=0,
                                           max_value=max_overlap, step=100, value=st.session_state.chunk_overlap)
 
                 st.button("Reset", on_click=reset_slider_value, args=(splitter_reset_dict,),
@@ -52,6 +52,8 @@ def playground_tab():
                     "k",
                     key="slider_k",
                     help="Amount of documents to return (Default: 4)",
+                    min_value=1,
+                    max_value=100,
                     value=st.session_state.k
                 )
 
