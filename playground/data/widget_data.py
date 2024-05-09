@@ -35,3 +35,10 @@ splitter_reset_dict = {
                     "slider_chunk_size": "chunk_size",
                     "slider_chunk_overlap": "chunk_overlap"
                 }
+
+retriever_reset_dict = {
+                    "slider_k": "k",
+                    "slider_fetch_k": "fetch_k",
+                    "slider_lambda_mult": "lambda_mult",
+                    "slider_score_threshold": "score_threshold"
+}

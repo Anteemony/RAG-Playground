@@ -29,6 +29,7 @@ def faiss_vector_storage(text_chunks):
 
     return vector_store
 
+
 def pinecone_vector_storage(text_chunks):
     vector_store = None
 
@@ -36,6 +37,13 @@ def pinecone_vector_storage(text_chunks):
 
     if st.session_state.embedding_model == "HuggingFaceEmbeddings":
         embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+        # Clear existing index
+        PineconeVectorStore.from_existing_index(
+            index_name=st.session_state.pinecone_index,
+            embedding=embeddings
+        ).delete(delete_all=True)
+
         vector_store = PineconeVectorStore.from_texts(
             text_chunks, 
             embedding=embeddings, 

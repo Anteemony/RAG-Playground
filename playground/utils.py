@@ -22,6 +22,11 @@ def init_keys():
     session_add("model_temperature", 0.3)
     session_add("store", {})
     session_add("chat_memory", True)
+    session_add("search_type", "similarity")
+    session_add("k", 4)
+    session_add("fetch_k", 20)
+    session_add("lambda_mult", 0.5)
+    session_add("score_threshold", 0.5)
 
 
 def field_callback(field):
