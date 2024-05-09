@@ -1,7 +1,7 @@
 from playground import st
 from playground.document_processing import process_inputs
 from playground.utils import field_callback, reset_slider_value, clear_history
-from playground.data.widget_data import model_reset_dict, splitter_reset_dict, retriever_reset_dict
+from playground.data.widget_data import model_reset_dict, splitter_reset_dict, retriever_reset_dict, model_max_context_limit
 
 
 def playground_tab():
@@ -35,8 +35,9 @@ def playground_tab():
                 st.button("Reset", on_click=reset_slider_value, args=(model_reset_dict,), key="model_param_reset")
 
             with st.expander("Text Splitter"):
-
-                chunk_size = st.slider("chunk_size", key="slider_chunk_size", min_value=200, max_value=10000, step=100,
+                # set ma chunk_size token to model context limit
+                max_token = model_max_context_limit[st.session_state.get("endpoint").split("@")[0]]
+                chunk_size = st.slider("chunk_size", key="slider_chunk_size", min_value=200, max_value=max_token, step=100,
                                        value=st.session_state.chunk_size)
                 max_overlap = min(chunk_size - 99, 1000)
                 chunk_overlap = st.slider("Chunk Overlap", key="slider_chunk_overlap", min_value=100,

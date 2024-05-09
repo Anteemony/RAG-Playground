@@ -25,6 +25,36 @@ model_provider = {
                 "claude-3-opus": ["anthropic"], "claude-3-sonnet": ["anthropic"]
 }
 
+model_max_context_limit = {
+                "mixtral-8x7b-instruct-v0.1": 32000,
+                "llama-2-70b-chat": 4096,
+                "llama-2-13b-chat": 4096,
+                "mistral-7b-instruct-v0.2": 8192,
+                "llama-2-7b-chat": 4096,
+                "codellama-34b-instruct": 4096,
+                "gemma-7b-it": 8192,
+                "mistral-7b-instruct-v0.1": 512,
+                "mixtral-8x22b-instruct-v0.1": 65536,
+                "codellama-13b-instruct": 4096,
+                "codellama-7b-instruct": 4096,
+                "yi-34b-chat": 4096,
+                "llama-3-8b-chat": 8192,
+                "llama-3-70b-chat": 8192,
+                "pplx-7b-chat": 4096,
+                "mistral-medium": 32000,
+                "gpt-4": 32000,
+                "pplx-70b-chat": 4096,
+                "gpt-3.5-turbo": 16000,
+                "deepseek-coder-33b-instruct": 16000,
+                "gemma-2b-it": 8192,
+                "gpt-4-turbo": 128000,
+                "mistral-small": 32000,
+                "mistral-large": 32000,
+                "claude-3-haiku": 200000,
+                "claude-3-opus": 200000,
+                "claude-3-sonnet": 200000
+}
+
 dynamic_provider = ["lowest-input-cost", "lowest-output-cost", "lowest-itl", "lowest-ttft", "highest-tks-per-sec"]
 
 model_reset_dict = {
