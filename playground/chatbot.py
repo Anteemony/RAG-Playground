@@ -129,8 +129,8 @@ def ask_unify():
         temperature=st.session_state.model_temperature
     )
 
-    # Return the approriate chain        
-    if st.session_state.chat_memory == True:
+    # Return the appropriate chain
+    if not st.session_state.history_unaware:
         return create_conversational_rag_chain(model, retriever)
     else:
         return create_qa_chain(model, retriever)
@@ -151,5 +151,5 @@ def chat_bot():
             output_chunks(rag_engine, query)
         )
 
-        if st.session_state.chat_memory:
+        if not st.session_state.history_unaware:
             st.session_state.messages.append((query, response))

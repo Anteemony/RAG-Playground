@@ -107,14 +107,13 @@ def playground_tab():
 
         with st.expander("Extras"):
             with st.container(border=True):
-                st.write("**Conversational Bot**")
-                st.write("Enable for a history aware chatbot")
-                st.write("Disable for a simple Q&A app with no history attached.")
+                st.markdown("**History Unaware**")
+                st.write("Useful when playing around with parameters (Input Cost Friendly)")
 
-                if st.toggle("Conversational Bot", value=st.session_state.chat_memory):
-                    chat_memory = True
+                if st.toggle("History Unaware", value=st.session_state.history_unaware, help="Enable for a simple Q&A app with no history attached."):
+                    history_unaware = True
                 else:
-                    chat_memory = False
+                    history_unaware = False
 
         if st.button("Apply Configuration", on_click=field_callback, args=("Configuration",), key="apply_params_config",
                      type="primary"):
@@ -123,9 +122,9 @@ def playground_tab():
             st.session_state.model_temperature = model_temperature
             st.session_state.chunk_size = chunk_size
             st.session_state.chunk_overlap = chunk_overlap
-            st.session_state.chat_memory = chat_memory
+            st.session_state.history_unaware = history_unaware
 
-            if not st.session_state.chat_memory:
+            if st.session_state.history_unaware:
                 # Clear message display history
                 st.session_state.messages = []
 
