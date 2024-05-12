@@ -1,5 +1,3 @@
-
-
 model_provider = {
                 "mixtral-8x7b-instruct-v0.1": ["together-ai", "octoai", "replicate", "mistral-ai", "perplexity-ai",
                                                "anyscale", "fireworks-ai", "lepton-ai", "deepinfra", "aws-bedrock"],
@@ -72,3 +70,4 @@ retriever_reset_dict = {
                     "slider_lambda_mult": "lambda_mult",
                     "slider_score_threshold": "score_threshold"
 }
+
