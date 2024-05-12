@@ -4,13 +4,9 @@ from playground.utils import generate_src
 
 def generate_code_tab():
     st.write("Finished adjusting the parameters to fit your use case? Get your code here.")
-    st.write(" Feature coming soon.. 🚧")
 
-    st.write("**Parameters**")
     with st.container(border=True):
-        st.write("**Vector store**: ", st.session_state.vector_selection)
-        st.write("**Embedding Model**: ", st.session_state.embedding_model)
-
+        st.write("**Parameters**")
         with st.container(border=True):
             st.write("**Endpoint**: ")
             st.text("model: " + str(st.session_state.endpoint.split("@")[0]))
@@ -24,6 +20,9 @@ def generate_code_tab():
 
         with st.container(border=True):
             st.write("**Retriever**")
+            st.write("*Vector store*: ", st.session_state.vector_selection)
+            st.write("*Embedding Model*: ", st.session_state.embedding_model)
+            st.write("*Retriever Keywords*: {")
             st.text("search_type: " + str(st.session_state.search_type))
             st.text("k: " + str(st.session_state.k))
 
@@ -34,10 +33,7 @@ def generate_code_tab():
                 st.text("fetch_k: " + str(st.session_state.fetch_k))
                 st.text("lambda_mult: " + str(st.session_state.lambda_mult))
 
-
-
-
-
+            st.write("}")
 
     if st.button("Generate Source Code", type="primary"):
         generate_src()
