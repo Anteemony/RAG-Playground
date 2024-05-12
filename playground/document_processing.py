@@ -1,6 +1,5 @@
 from PyPDF2 import PdfReader
 from playground import st
-from playground.data.widget_data import model_provider, dynamic_provider
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -38,17 +37,20 @@ def pinecone_vector_storage(text_chunks):
     if st.session_state.embedding_model == "HuggingFaceEmbeddings":
         embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-        # Clear existing index
-        PineconeVectorStore.from_existing_index(
-            index_name=st.session_state.pinecone_index,
-            embedding=embeddings
-        ).delete(delete_all=True)
-
-        vector_store = PineconeVectorStore.from_texts(
-            text_chunks, 
-            embedding=embeddings, 
-            index_name=st.session_state.pinecone_index
-        )
+        try:
+            # Clear existing index data if there's any
+            PineconeVectorStore.from_existing_index(
+                index_name=st.session_state.pinecone_index,
+                embedding=embeddings
+            ).delete(delete_all=True)
+        except Exception as e:
+            print("The index is empty")
+        finally:
+            vector_store = PineconeVectorStore.from_texts(
+                text_chunks,
+                embedding=embeddings,
+                index_name=st.session_state.pinecone_index
+            )
     
     return vector_store
     
