@@ -137,15 +137,16 @@ def playground_tab():
             # Check if 'chat_memory' is in the session state, if not initialize it
             if "chat_memory" not in st.session_state:
                 st.session_state.chat_memory = []
-                
-            # Toggle to enable/disable chat history memory and RAG conversational feature    
-            with st.expander("Chat history"):
-                # Toggle for enabling/disabling conversational bot
-                if st.toggle("Conversational Bot", value=st.session_state.chat_memory,
-                             help="Enable for a history aware chatbot. Disable for a simple Q&A app with no history attached."):
-                    chat_memory = True
-                else:
-                    history_unaware = False
+            with st.expander("Extras"):
+                with st.container(border=True):
+                    st.write("**Conversational Bot**")
+                    st.write("Enable for a history aware chatbot")
+                    st.write("Disable for a simple Q&A app with no history attached.")
+
+                    if st.toggle("Conversational Bot", value=st.session_state.chat_memory):  # Toggle for chat memory
+                        chat_memory = True
+                    else:
+                        history_unaware = False
 
             # Apply configuration button
             if st.button("Apply Configuration", on_click=field_callback, args=("Configuration",), key="apply_params_config",
