@@ -1,17 +1,32 @@
-from playground import st
-from playground.data.widget_data import model_provider, dynamic_provider
-from playground.document_processing import process_inputs
-from playground.utils import field_callback, clear_history
+"""
+This module, `home.py`, sets up the home tab of the Streamlit application.
 
+It includes the following main functions:
+- `home_tab`: This function sets up the home tab of the Streamlit application.
+
+The module imports necessary modules and functions from `playground`.
+"""
+
+# Import necessary modules and functions 
+from playground import st  # Streamlit library for creating web apps
+from playground.data.widget_data import model_provider, dynamic_provider  # Provides data for widgets
+from playground.document_processing import process_inputs  # Function to process inputs
+from playground.utils import field_callback, clear_history  # Callback function for fields and function to clear history
 
 def home_tab():
-    # input for Unify API Key
+    """
+    This function sets up the home tab of the Streamlit application.
+    It sets up the input for Unify API Key, model and provider selection, document uploader, and submit and clear chat history buttons.
+    """
+    # Input for Unify API Key
     st.session_state.unify_api_key = st.text_input("Unify API Key*", type="password", on_change=field_callback,
                                                    placeholder="Enter Unify API Key", args=("Unify Key ",))
+
     # Model and provider selection
     model_name = st.selectbox("Select Model", options=model_provider.keys(), index=20, on_change=field_callback,
                               placeholder="Model", args=("Model",))
 
+    # Enable Dynamic Routing
     if st.toggle("Enable Dynamic Routing"):
         provider_name = st.selectbox("Select a Provider", options=dynamic_provider,
                                      on_change=field_callback,
@@ -21,6 +36,7 @@ def home_tab():
                                      on_change=field_callback,
                                      placeholder="Provider", args=("Provider",))
 
+    # Set the endpoint
     st.session_state.endpoint = f"{model_name}@{provider_name}"
 
     # Document uploader

@@ -1,3 +1,15 @@
+"""
+This module, `chatbot`, provides functionalities to create a conversational RAG chain.
+
+It includes the following main functions:
+- `create_conversational_rag_chain`: This function creates a conversational RAG chain using a given model and a history-aware retriever.
+
+The module imports necessary modules and functions from `langchain`, `langchain_core`, `langchain_unify`, `playground`, and `langchain_community`.
+
+This module is part of the larger project that aims to build a chatbot using RAG (Retrieval-Augmented Generation) model.
+"""
+
+# Import necessary modules and functions for the chatbot module
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
@@ -10,31 +22,48 @@ from playground.utils import clear_history
 from playground.document_processing import process_inputs, format_docs, output_chunks
 from langchain_community.chat_message_histories import ChatMessageHistory
 
+def create_conversational_rag_chain(model, history_aware_retriever):
+    """
+    Creates a conversational RAG chain.
 
-def create_conversational_rag_chain(model, retriever):
+    Args:
+        model: The model to be used for the RAG chain.
+        history_aware_retriever: The retriever that is aware of the chat history.
+
+    Returns:
+        A RunnableWithMessageHistory object that represents the conversational RAG chain.
+    """
+    # Define the system prompt for the contextualized question
     contextualize_q_system_prompt = """Given a chat history and the latest user question \
     which might reference context in the chat history, formulate a standalone question \
     which can be understood without the chat history. Do NOT answer the question, \
     just reformulate it if needed and otherwise return it as is."""
+    
 
+    # Create a ChatPromptTemplate object for the contextualized question
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", contextualize_q_system_prompt),
-            MessagesPlaceholder("chat_history"),
-            ("human", "{input}"),
+            ("system", contextualize_q_system_prompt),  # System prompt
+            MessagesPlaceholder("chat_history"),    # Placeholder for chat history
+            ("human", "{input}"),   # User input
         ]
     )
 
+    # Create a chain of documents for the history-aware retriever# Create a history-aware retriever with the model, formatted documents, and the contextualized question prompt
     history_aware_retriever = create_history_aware_retriever(
-        model, retriever | format_docs, contextualize_q_prompt
+        model,  # The model to be used 
+        retriever | format_docs,     # The retriever and the formatted documents 
+        contextualize_q_prompt    # The contextualized question prompt
     )
 
+    # Define the prompt for the QA system
     qa_system_prompt = """You are an assistant for question-answering tasks. \
     Use the following pieces of retrieved context to answer the question. \
     If you don't know the answer, just say that you don't know. \
     Use three sentences maximum and keep the answer concise.\
     {context}"""
 
+    # Create a ChatPromptTemplate object for the QA system
     qa_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", qa_system_prompt),
@@ -43,15 +72,26 @@ def create_conversational_rag_chain(model, retriever):
         ]
     )
 
+    # Create a chain of documents for the QA system  
     question_answer_chain = create_stuff_documents_chain(model, qa_prompt)
-
+    
+    # Create a retrieval chain with the history-aware retriever and the QA chain
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
     def get_session_history(session_id: str) -> BaseChatMessageHistory:
+        """Gets the chat history for a given session.
+
+        Args:
+            session_id: The ID of the session.
+
+        Returns:
+            The chat history for the session.
+        """
         if session_id not in st.session_state.store:
             st.session_state.store[session_id] = ChatMessageHistory()
         return st.session_state.store[session_id]
-
+    
+    # Create a RunnableWithMessageHistory object for the RAG chain
     conversational_rag_chain = RunnableWithMessageHistory(
         rag_chain,
         get_session_history,
@@ -62,23 +102,34 @@ def create_conversational_rag_chain(model, retriever):
 
     return conversational_rag_chain
 
-
 def create_qa_chain(model, retriever):
-    # Simplified RAG system without using chat history
+    """Creates a QA chain.
+
+    Args:
+        model: The model to be used for the QA chain.
+        retriever: The retriever to be used for the QA chain.
+
+    Returns:
+        A chain that represents the QA system.
+    """
+    # Define the prompt for the QA system
     qa_system_prompt = """You are an assistant for question-answering tasks. \
     Use the following pieces of retrieved context to answer the question. \
     If you don't know the answer, just say that you don't know. \
     Use three sentences maximum and keep the answer concise.\
     {context}"""
 
+    # Create a ChatPromptTemplate object for the QA system
     qa_prompt_no_memory = ChatPromptTemplate.from_messages(
         [
             ("system", qa_system_prompt),
             ("human", "{input}"),
         ]
     )
-    # Simple retriever setup, similar but without using history
+    # Create a chain of documents for the QA system
     question_answer_chain = create_stuff_documents_chain(model, qa_prompt_no_memory)
+    
+    # Create a retrieval chain with the retriever and the QA chain
     chain = create_retrieval_chain(retriever, question_answer_chain)
 
     return chain

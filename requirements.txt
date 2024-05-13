@@ -2,7 +2,9 @@ streamlit>=1.34.0
 PyPDF2
 sentence_transformers
 faiss-cpu
+# Install the 'langchain' package from the 'unifyai/langchain' GitHub repository
 git+https://github.com/unifyai/langchain.git#egg=langchain&subdirectory=libs/langchain
+# Install the 'langchain-unify' package from the 'unifyai/langchain' GitHub repository
 git+https://github.com/unifyai/langchain.git#egg=langchain-unify&subdirectory=libs/partners/unify
 langchain-community
 langchain-pinecone

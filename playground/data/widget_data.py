@@ -1,5 +1,14 @@
+"""
+This module, `widget_data.py`, provides data for the widgets in the Streamlit application.
 
+It includes the following main dictionaries:
+- `model_provider`: This dictionary maps each model to a list of providers.
+- `model_max_context_limit`: This dictionary maps each model to its maximum context limit.
 
+The module does not import any modules or functions.
+"""
+
+# Dictionary mapping each model to a list of providers
 model_provider = {
                 "mixtral-8x7b-instruct-v0.1": ["together-ai", "octoai", "replicate", "mistral-ai", "perplexity-ai",
                                                "anyscale", "fireworks-ai", "lepton-ai", "deepinfra", "aws-bedrock"],
@@ -25,6 +34,7 @@ model_provider = {
                 "claude-3-opus": ["anthropic"], "claude-3-sonnet": ["anthropic"]
 }
 
+# Dictionary mapping each model to its maximum context limit
 model_max_context_limit = {
                 "mixtral-8x7b-instruct-v0.1": 32000,
                 "llama-2-70b-chat": 4096,
