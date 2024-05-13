@@ -8,6 +8,10 @@ It includes the following main sections:
 The module uses the Streamlit library for creating the web interface and session state for storing parameters.
 """
 
+# Import necessary modules and functions
+import streamlit as st
+
+
 def display_parameters():
     """
     This function displays the parameters and a button to generate the source code.

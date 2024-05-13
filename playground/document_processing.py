@@ -89,7 +89,7 @@ def pinecone_vector_storage(text_chunks):
             print("The index is empty")
         finally:
             # Create a Pinecone vector store from the text chunks using the embeddings
-        vector_store = PineconeVectorStore.from_texts(
+            vector_store = PineconeVectorStore.from_texts(
                 text_chunks,
                 embedding=embeddings,
                 index_name=st.session_state.pinecone_index

@@ -11,7 +11,7 @@ The module imports necessary modules and functions from `streamlit` and `playgro
 import streamlit as st
 from playground.chatbot import chat_bot
 from playground.tabs.home import home_tab
-from playground.tabs.generate import generate_code_tab
+from playground.tabs.generate import display_parameters
 from playground.tabs.play import playground_tab
 
 def landing_page():
@@ -54,7 +54,7 @@ def landing_page():
 
         # Display the generate code tab
         with tab3:
-            generate_code_tab()
+            display_parameters()
 
     # Call the chat_bot function
     chat_bot()

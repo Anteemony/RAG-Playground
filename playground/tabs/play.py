@@ -133,7 +133,12 @@ def playground_tab():
             # Set the applied_config state to False
             st.session_state.applied_config = False
 
-            # Toggle to enable/disable chat history memory and RAG conversational feature
+        
+            # Check if 'chat_memory' is in the session state, if not initialize it
+            if "chat_memory" not in st.session_state:
+                st.session_state.chat_memory = []
+                
+            # Toggle to enable/disable chat history memory and RAG conversational feature    
             with st.expander("Chat history"):
                 # Toggle for enabling/disabling conversational bot
                 if st.toggle("Conversational Bot", value=st.session_state.chat_memory,
