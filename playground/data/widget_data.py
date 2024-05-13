@@ -65,17 +65,21 @@ model_max_context_limit = {
                 "claude-3-sonnet": 200000
 }
 
+# Dictionary mapping each model slider to its corresponding session_state key
 dynamic_provider = ["lowest-input-cost", "lowest-output-cost", "lowest-itl", "lowest-ttft", "highest-tks-per-sec"]
 
+# Dictionary mapping each model slider to its corresponding session_state key
 model_reset_dict = {
                     "slider_model_temperature": "model_temperature"
                 }
 
+# Dictionary mapping each splitter slider to its corresponding session_state key
 splitter_reset_dict = {
                     "slider_chunk_size": "chunk_size",
                     "slider_chunk_overlap": "chunk_overlap"
                 }
 
+# Dictionary mapping each retriever slider to its corresponding session_state key
 retriever_reset_dict = {
                     "slider_k": "k",
                     "slider_fetch_k": "fetch_k",
