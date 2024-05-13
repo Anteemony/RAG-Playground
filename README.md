@@ -6,7 +6,7 @@
   <source src="RAG_Playground.mp4" type="video/mp4">
 Your browser does not support the video tag.
 </video>
-
+-
 RAG Playground is an application that allows you to interact with your PDF files using the Language Model of your choice.
 
 ## Introduction
