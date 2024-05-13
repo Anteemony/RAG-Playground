@@ -51,7 +51,7 @@ def create_conversational_rag_chain(model, history_aware_retriever):
     # Create a chain of documents for the history-aware retriever# Create a history-aware retriever with the model, formatted documents, and the contextualized question prompt
     history_aware_retriever = create_history_aware_retriever(
         model,  # The model to be used 
-        retriever | format_docs,     # The retriever and the formatted documents 
+        history_aware_retriever | format_docs,     # The retriever and the formatted documents 
         contextualize_q_prompt    # The contextualized question prompt
     )
 
