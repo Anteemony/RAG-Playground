@@ -13,6 +13,7 @@ The module imports necessary modules and functions from `playground`.
 
 # Import necessary modules and functions 
 from playground import st
+from pathlib import Path
 
 
 def session_add(key, value, is_func=False):
@@ -43,12 +44,13 @@ def init_keys():
     session_add("messages", [])
     session_add("model_temperature", 0.3)
     session_add("store", {})
-    session_add("chat_memory", True)
     session_add("search_type", "similarity")
     session_add("k", 4)
     session_add("fetch_k", 20)
     session_add("lambda_mult", 0.5)
     session_add("score_threshold", 0.5)
+    session_add("history_unaware", False)
+    session_add("search_kwargs", {})
 
 
 def field_callback(field):
@@ -58,15 +60,40 @@ def field_callback(field):
     st.toast(f"{field} Updated Successfully!", icon="🎉")
 
 
-@st.experimental_dialog("Source Code🚧", width="large")
+@st.experimental_dialog("Source Code", width="large")
 def generate_src():
-    """
-    This function generates a source code snippet.
-    """
-    code = '''
-        def coming_soon():
-            print("RAG Source Code!")
-        '''
+    st.write("Get the requirements from the requirements.txt of the repository")
+    st.link_button("Go to requirements",
+                   "https://github.com/Anteemony/RAG-Playground", type="primary")
+    code = None
+    file_path = None
+    base_path = Path(__file__).parent
+
+    if st.session_state["embedding_model"] == "HuggingFaceEmbeddings":
+        if st.session_state["vector_selection"] == "FAISS":
+            code_path = "../playground/data/faiss_huggingface.py"
+            file_path = (base_path / code_path).resolve()
+
+        elif st.session_state["vector_selection"] == "Pinecone":
+            code_path = "../playground/data/pinecone_huggingface.py"
+            file_path = (base_path / code_path).resolve()
+
+    with (open(file_path, "r") as f):
+        code = f.readlines()
+        code = "".join(code).replace(
+            'enter_endpoint', str(st.session_state.endpoint)
+        ).replace(
+            'enter_model_temperature', str(st.session_state.model_temperature)
+        ).replace(
+            'enter_chunk_size', str(st.session_state.chunk_size)
+        ).replace(
+            'enter_chunk_overlap', str(st.session_state.chunk_overlap)
+        ).replace(
+            'enter_search_type', str(st.session_state.search_type)
+        ).replace(
+            'enter_search_kwargs', str(st.session_state.search_kwargs)
+        )
+
     st.code(code, language='python')
 
 

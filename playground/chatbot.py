@@ -18,7 +18,6 @@ from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_unify.chat_models import ChatUnify
 from playground import st
-from playground.utils import clear_history
 from playground.document_processing import process_inputs, format_docs, output_chunks
 from langchain_community.chat_message_histories import ChatMessageHistory
 
@@ -60,7 +59,6 @@ def create_conversational_rag_chain(model, history_aware_retriever):
     qa_system_prompt = """You are an assistant for question-answering tasks. \
     Use the following pieces of retrieved context to answer the question. \
     If you don't know the answer, just say that you don't know. \
-    Use three sentences maximum and keep the answer concise.\
     {context}"""
 
     # Create a ChatPromptTemplate object for the QA system
@@ -116,7 +114,6 @@ def create_qa_chain(model, retriever):
     qa_system_prompt = """You are an assistant for question-answering tasks. \
     Use the following pieces of retrieved context to answer the question. \
     If you don't know the answer, just say that you don't know. \
-    Use three sentences maximum and keep the answer concise.\
     {context}"""
 
     # Create a ChatPromptTemplate object for the QA system
@@ -141,28 +138,26 @@ def get_retriever():
     based on the search type
     :return: VectorStoreRetriever
     '''
-    search_type = st.session_state.search_type
-    search_kwargs = {}
 
     if st.session_state.search_type == "similarity":
-        search_kwargs = {"k": st.session_state.k}
+        st.session_state.search_kwargs = {"k": st.session_state.k}
 
     elif st.session_state.search_type == "similarity_score_threshold":
-        search_kwargs = {
+        st.session_state.search_kwargs = {
             "k": st.session_state.k,
             "score_threshold": st.session_state.score_threshold
         }
 
     elif st.session_state.search_type == "mmr":
-        search_kwargs = {
+        st.session_state.search_kwargs = {
             "k": st.session_state.k,
             "fetch_k": st.session_state.fetch_k,
             "lambda_mult": st.session_state.lambda_mult
         }
 
     retriever = st.session_state.vector_store.as_retriever(
-        search_type=search_type,
-        search_kwargs=search_kwargs
+        search_type=st.session_state.search_type,
+        search_kwargs=st.session_state.search_kwargs
     )
 
     return retriever
@@ -180,8 +175,8 @@ def ask_unify():
         temperature=st.session_state.model_temperature
     )
 
-    # Return the approriate chain        
-    if st.session_state.chat_memory == True:
+    # Return the appropriate chain
+    if not st.session_state.history_unaware:
         return create_conversational_rag_chain(model, retriever)
     else:
         return create_qa_chain(model, retriever)
@@ -202,5 +197,5 @@ def chat_bot():
             output_chunks(rag_engine, query)
         )
 
-        if st.session_state.chat_memory:
+        if not st.session_state.history_unaware:
             st.session_state.messages.append((query, response))

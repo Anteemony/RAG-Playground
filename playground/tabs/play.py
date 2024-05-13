@@ -71,7 +71,7 @@ def playground_tab():
                                        value=st.session_state.chunk_size,
                                        help="The maximum size of each chunk in tokens. (Default: 1000)")
                 max_overlap = min(chunk_size - 99, 1000)  # max_overlap < chunk_size to avoid infinite loops while processing documents
-                chunk_overlap = st.slider("Chunk Overlap", key="slider_chunk_overlap", min_value=100,
+                chunk_overlap = st.slider("Chunk Overlap", key="slider_chunk_overlap", min_value=0,
                                           max_value=max_overlap, step=100, 
                                           value=st.session_state.chunk_overlap,
                                           help="The number of tokens to overlap between chunks. (Default: 100)")
@@ -90,7 +90,9 @@ def playground_tab():
                 k = st.slider(
                     "k",
                     key="slider_k",
-                    help="amount of documents to return (Default: 4).",
+                    help="Amount of documents to return (Default: 4)",
+                    min_value=1,
+                    max_value=100,
                     value=st.session_state.k
                 )
 
@@ -138,7 +140,7 @@ def playground_tab():
                              help="Enable for a history aware chatbot. Disable for a simple Q&A app with no history attached."):
                     chat_memory = True
                 else:
-                    chat_memory = False
+                    history_unaware = False
 
             # Apply configuration button
             if st.button("Apply Configuration", on_click=field_callback, args=("Configuration",), key="apply_params_config",
@@ -149,10 +151,10 @@ def playground_tab():
                 st.session_state.model_temperature = model_temperature
                 st.session_state.chunk_size = chunk_size
                 st.session_state.chunk_overlap = chunk_overlap
-                st.session_state.chat_memory = chat_memory
+                st.session_state.history_unaware = history_unaware
 
                 # Clear message display history if chat memory is not enabled
-                if not st.session_state.chat_memory:
+                if st.session_state.history_unaware:
                     st.session_state.messages = []
 
                 # Set retriever session state variables
