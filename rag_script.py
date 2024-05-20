@@ -1,3 +1,9 @@
+"""
+Main script to run the RAG Playground application.
+
+This script initializes session keys and launches the landing page of the application.
+"""
+
 from playground import landing_page
 from playground.utils import init_keys
 
