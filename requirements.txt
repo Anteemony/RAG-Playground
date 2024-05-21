@@ -4,5 +4,5 @@ sentence_transformers
 faiss-cpu
 git+https://github.com/unifyai/langchain.git#egg=langchain&subdirectory=libs/langchain
 git+https://github.com/unifyai/langchain.git#egg=langchain-unify&subdirectory=libs/partners/unify
-langchain-community
-langchain-pinecone
+langchain_community
+langchain_pinecone
