@@ -3,8 +3,15 @@ from playground.utils import generate_src
 
 
 def generate_code_tab():
+    """ 
+    displays the current configuration of the application, including the endpoint, model parameters, 
+    text splitter parameters, and retriever parameters. 
+    And provides a button to generate the source code based on the current configuration.
+    """
+    
     st.write("Finished adjusting the parameters to fit your use case? Get your code here.")
-
+    
+    # Display the parameters
     with st.container(border=True):
         st.write("**Parameters**")
         with st.container(border=True):
@@ -34,6 +41,7 @@ def generate_code_tab():
                 st.text("lambda_mult: " + str(st.session_state.lambda_mult))
 
             st.write("}")
-
+            
+    # Button to generate the source code
     if st.button("Generate Source Code", type="primary"):
         generate_src()
