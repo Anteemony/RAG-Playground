@@ -5,6 +5,11 @@ from playground.data.widget_data import model_reset_dict, splitter_reset_dict, r
 
 
 def playground_tab():
+    """
+    This function provides an interface for the Playground tab in the application.
+    After the user clicks the "Apply Configuration" button, the function updates the session state with the selected settings and parameters.
+    """
+    
     st.write("**Welcome to Playground!**.🛝")
     st.write("Adjust the application settings and parameters to suite your use case.",
              "Don't forget to click the **Apply Configuration** button at the bottom after editing")
@@ -23,32 +28,35 @@ def playground_tab():
                 vector_selection = st.selectbox("Select Local Vector Storage", options=["FAISS"])
 
         with st.expander("Embedding Model"):
-            embedding_model = st.selectbox("Select Embedding Model", options=["HuggingFaceEmbeddings"])
+            embedding_model = st.selectbox("Select Embedding Model", options=["HuggingFaceEmbeddings"],
+                                            help="Select the embedding model to use for the application")
 
         with st.container(border=True):
             st.write("**Adjust Parameters** ")
 
             with st.expander("Model"):
                 model_temperature = st.slider("temperature", key="slider_model_temperature", min_value=0.0,
-                                              max_value=1.0, step=0.1, value=st.session_state.model_temperature)
+                                              max_value=1.0, step=0.1, value=st.session_state.model_temperature,
+                                              help="Temperature controls the randomness or creativity of the generated text")
 
                 st.button("Reset", on_click=reset_slider_value, args=(model_reset_dict,), key="model_param_reset")
 
             with st.expander("Text Splitter"):
-                # set ma chunk_size token to model context limit
                 max_token = model_max_context_limit[st.session_state.get("endpoint").split("@")[0]]
-                chunk_size = st.slider("chunk_size", key="slider_chunk_size", min_value=200, max_value=max_token, step=100,
-                                       value=st.session_state.chunk_size)
-                max_overlap = min(chunk_size - 99, 1000)
+                chunk_size = st.slider("chunk_size", key="slider_chunk_size", min_value=200, max_value=max_token, step=100, # max_token given by model_max_context_limit
+                                       value=st.session_state.chunk_size,
+                                       help="The maximum size of each chunk in tokens")
+                max_overlap = min(chunk_size - 99, 1000)    # chunk_size - 99 to avoid overlap > chunk_size
                 chunk_overlap = st.slider("Chunk Overlap", key="slider_chunk_overlap", min_value=0,
-                                          max_value=max_overlap, step=100, value=st.session_state.chunk_overlap)
+                                          max_value=max_overlap, step=100, value=st.session_state.chunk_overlap,
+                                          help="The number of tokens to overlap between chunks")
 
                 st.button("Reset", on_click=reset_slider_value, args=(splitter_reset_dict,),
                           key="text_splitter_param_reset")
 
             with st.expander("Retirever"):
                 search_type = st.selectbox("Search Type", options=["similarity", "mmr", "similarity_score_threshold"],
-                                           help="Defines the type of search that the Retriever should perform.")
+                                           help="Defines the type of search that the Retriever should perform")
                 k = st.slider(
                     "k",
                     key="slider_k",
@@ -62,7 +70,7 @@ def playground_tab():
                     score_threshold = st.slider(
                         "score_threshold",
                         key="slider_score_threshold",
-                        help="Minimum relevance threshold for similarity_score_threshold",
+                        help="Minimum relevance threshold for a document to be returned",
                         min_value=0.0,
                         max_value=1.0,
                         step=0.1,
@@ -73,13 +81,13 @@ def playground_tab():
                     fetch_k = st.slider(
                         "fetch_k",
                         key="slider_fetch_k",
-                        help="Amount of documents to pass to MMR algorithm (Default: 20)",
+                        help="Amount of documents to pass to MMR algorithm",
                         value=st.session_state.fetch_k
                     )
                     lambda_mult = st.slider(
                         "lambda_mult",
                         key="slider_lambda_mult",
-                        help="Diversity of results returned by MMR; 1 for minimum diversity and 0 for maximum. (Default: 0.5)",
+                        help="Diversity of results returned by MMR; 1 for minimum diversity and 0 for maximum",
                         min_value=0.0,
                         max_value=1.0,
                         step=0.1,
@@ -106,12 +114,13 @@ def playground_tab():
 
             st.session_state.applied_config = False
 
+        # History Unaware Toggle
         with st.expander("Extras"):
             with st.container(border=True):
                 st.markdown("**History Unaware**")
                 st.write("Useful when playing around with parameters (Input Cost Friendly)")
 
-                if st.toggle("History Unaware", value=st.session_state.history_unaware, help="Enable for a simple Q&A app with no history attached."):
+                if st.toggle("History Unaware", value=st.session_state.history_unaware, help="Enable for a simple Q&A app with no history attached"):
                     history_unaware = True
                 else:
                     history_unaware = False
@@ -126,10 +135,8 @@ def playground_tab():
             st.session_state.history_unaware = history_unaware
 
             if st.session_state.history_unaware:
-                # Clear message display history
                 st.session_state.messages = []
 
-            # Retriever
             st.session_state.search_type = search_type
             st.session_state.k = k
 
