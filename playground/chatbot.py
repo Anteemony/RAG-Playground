@@ -11,11 +11,22 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 
 
 def create_conversational_rag_chain(model, retriever):
+    """
+    Creates a conversational RAG chain. This is a question-answering (QA) system with the ability to consider historical context.
+
+    Parameters:
+    model: The model selected by the user.
+    retriever: The retriever to use for fetching relevant documents.
+
+    Returns:
+    RunnableWithMessageHistory: The conversational chain that generates the answer to the query.
+    """
+    
     contextualize_q_system_prompt = """Given a chat history and the latest user question \
     which might reference context in the chat history, formulate a standalone question \
     which can be understood without the chat history. Do NOT answer the question, \
     just reformulate it if needed and otherwise return it as is."""
-
+    
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", contextualize_q_system_prompt),
@@ -23,7 +34,7 @@ def create_conversational_rag_chain(model, retriever):
             ("human", "{input}"),
         ]
     )
-
+    
     history_aware_retriever = create_history_aware_retriever(
         model, retriever | format_docs, contextualize_q_prompt
     )
@@ -40,12 +51,20 @@ def create_conversational_rag_chain(model, retriever):
             ("human", "{input}"),
         ]
     )
-
     question_answer_chain = create_stuff_documents_chain(model, qa_prompt)
 
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
     def get_session_history(session_id: str) -> BaseChatMessageHistory:
+        """
+        Retrieves the chat history for a given session.
+
+        Parameters:
+        session_id (str): The ID of the session.
+
+        Returns:
+        BaseChatMessageHistory: The chat history for the provided session ID.
+        """
         if session_id not in st.session_state.store:
             st.session_state.store[session_id] = ChatMessageHistory()
         return st.session_state.store[session_id]
@@ -57,12 +76,22 @@ def create_conversational_rag_chain(model, retriever):
         history_messages_key="chat_history",
         output_messages_key="answer",
     )
-
+    
     return conversational_rag_chain
 
 
 def create_qa_chain(model, retriever):
-    # Simplified RAG system without using chat history
+    """
+    Creates a question-answering (QA) chain for a chatbot without considering historical context.
+
+    Parameters:
+    model: The model selected by the user.
+    retriever: The retriever to use for fetching relevant documents.
+
+    Returns:
+    chain: it takes a user's query as input and produces a chatbot's response as output.
+    """
+    
     qa_system_prompt = """You are an assistant for question-answering tasks. \
     Use the following pieces of retrieved context to answer the question. \
     If you don't know the answer, just say that you don't know. \
@@ -74,7 +103,7 @@ def create_qa_chain(model, retriever):
             ("human", "{input}"),
         ]
     )
-    # Simple retriever setup, similar but without using history
+    
     question_answer_chain = create_stuff_documents_chain(model, qa_prompt_no_memory)
     chain = create_retrieval_chain(retriever, question_answer_chain)
 
@@ -82,11 +111,7 @@ def create_qa_chain(model, retriever):
 
 
 def get_retriever():
-    '''
-    Set the corresponding search keyword arguments
-    based on the search type
-    :return: VectorStoreRetriever
-    '''
+    """ Creates a retriever using the vector store in the session state and the selected search parameters."""
 
     if st.session_state.search_type == "similarity":
         st.session_state.search_kwargs = {"k": st.session_state.k}
@@ -113,6 +138,8 @@ def get_retriever():
 
 
 def ask_unify():
+    """ Depending on whether the session state is history-unaware, it returns either a conversational RAG chain or a QA chain."""
+    
     if "vector_store" not in st.session_state:
         process_inputs()
 
@@ -132,6 +159,8 @@ def ask_unify():
 
 
 def chat_bot():
+    """ Takes user queries and generates responses. It writes the user query and the response to the chat window."""
+    
     if query := st.chat_input("Ask your document anything...", key="query"):
 
         if "processed_input" not in st.session_state:
