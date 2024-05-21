@@ -5,13 +5,17 @@ from playground.utils import field_callback, clear_history
 
 
 def home_tab():
+    """
+    This function sets up the home tab.
+    It sets up the input for Unify API Key, model and provider selection and document uploader.
+    """
     # input for Unify API Key
     st.session_state.unify_api_key = st.text_input("Unify API Key*", type="password", on_change=field_callback,
                                                    placeholder="Enter Unify API Key", args=("Unify Key ",))
+    
     # Model and provider selection
     model_name = st.selectbox("Select Model", options=model_provider.keys(), index=20, on_change=field_callback,
                               placeholder="Model", args=("Model",))
-
     if st.toggle("Enable Dynamic Routing"):
         provider_name = st.selectbox("Select a Provider", options=dynamic_provider,
                                      on_change=field_callback,
@@ -20,7 +24,6 @@ def home_tab():
         provider_name = st.selectbox("Select a Provider", options=model_provider[model_name],
                                      on_change=field_callback,
                                      placeholder="Provider", args=("Provider",))
-
     st.session_state.endpoint = f"{model_name}@{provider_name}"
 
     # Document uploader

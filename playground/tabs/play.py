@@ -9,14 +9,14 @@ def playground_tab():
     This function provides an interface for the Playground tab in the application.
     After the user clicks the "Apply Configuration" button, the function updates the session state with the selected settings and parameters.
     """
-    
     st.write("**Welcome to Playground!**.🛝")
     st.write("Adjust the application settings and parameters to suite your use case.",
              "Don't forget to click the **Apply Configuration** button at the bottom after editing")
     st.write("⚠️: If you end up getting errors, readjust the parameters or click the Reset Buttons!")
 
-    with st.container(border=True):
-
+    with st.container(border=True):   
+        
+        # Vector Storage Selection
         with st.expander("Vector Storage"):
             if st.toggle("Use Online Vector Storage"):
                 vector_selection = st.selectbox("Select Online Vector Storage", options=["Pinecone"])
@@ -26,21 +26,23 @@ def playground_tab():
                     st.write("⚠️: The index records will be cleared and started afresh")
             else:
                 vector_selection = st.selectbox("Select Local Vector Storage", options=["FAISS"])
-
+                
+        # Embedding Model Selection        
         with st.expander("Embedding Model"):
             embedding_model = st.selectbox("Select Embedding Model", options=["HuggingFaceEmbeddings"],
                                             help="Select the embedding model to use for the application")
 
         with st.container(border=True):
             st.write("**Adjust Parameters** ")
-
+            
+            # Model Parameters  
             with st.expander("Model"):
                 model_temperature = st.slider("temperature", key="slider_model_temperature", min_value=0.0,
                                               max_value=1.0, step=0.1, value=st.session_state.model_temperature,
                                               help="Temperature controls the randomness or creativity of the generated text")
-
                 st.button("Reset", on_click=reset_slider_value, args=(model_reset_dict,), key="model_param_reset")
-
+                
+            # Text Splitter Parameters  
             with st.expander("Text Splitter"):
                 max_token = model_max_context_limit[st.session_state.get("endpoint").split("@")[0]]
                 chunk_size = st.slider("chunk_size", key="slider_chunk_size", min_value=200, max_value=max_token, step=100, # max_token given by model_max_context_limit
@@ -50,10 +52,10 @@ def playground_tab():
                 chunk_overlap = st.slider("Chunk Overlap", key="slider_chunk_overlap", min_value=0,
                                           max_value=max_overlap, step=100, value=st.session_state.chunk_overlap,
                                           help="The number of tokens to overlap between chunks")
-
                 st.button("Reset", on_click=reset_slider_value, args=(splitter_reset_dict,),
                           key="text_splitter_param_reset")
-
+                
+            # Retriever Parameters
             with st.expander("Retirever"):
                 search_type = st.selectbox("Search Type", options=["similarity", "mmr", "similarity_score_threshold"],
                                            help="Defines the type of search that the Retriever should perform")
@@ -65,7 +67,7 @@ def playground_tab():
                     max_value=100,
                     value=st.session_state.k
                 )
-
+                
                 if search_type == "similarity_score_threshold":
                     score_threshold = st.slider(
                         "score_threshold",
@@ -124,7 +126,8 @@ def playground_tab():
                     history_unaware = True
                 else:
                     history_unaware = False
-
+                    
+        # Apply Configuration Button
         if st.button("Apply Configuration", on_click=field_callback, args=("Configuration",), key="apply_params_config",
                      type="primary"):
             st.session_state.embedding_model = embedding_model
